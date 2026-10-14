@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\MetaPixel;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\Page;
@@ -62,6 +63,12 @@ class StorefrontController extends Controller
             max(1, (int) $request->input('quantity', 1)),
             $optionIds,
             $request->boolean('checkout')
+        );
+
+        MetaPixel::queue(
+            'AddToCart',
+            MetaPixel::productParams($product, max(1, (int) $request->input('quantity', 1))),
+            MetaPixel::newEventId('add_to_cart')
         );
 
         if ($result['redirect_checkout']) {
@@ -165,8 +172,9 @@ class StorefrontController extends Controller
     public function orderConfirmed(Order $order): View
     {
         $order->confirmIfExpired()->load('items');
+        $trackPurchase = MetaPixel::shouldTrackPurchase($order);
 
-        return view('storefront.order-confirmed', compact('order'));
+        return view('storefront.order-confirmed', compact('order', 'trackPurchase'));
     }
 
     public function newsletter(Request $request): RedirectResponse

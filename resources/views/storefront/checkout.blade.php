@@ -3,6 +3,11 @@
 @section('title', __('messages.checkout'))
 
 @section('content')
+@if($cartItems->isNotEmpty())
+    @push('meta_pixel')
+        <script>window.egTrack('InitiateCheckout', @json(\App\Support\MetaPixel::cartParams($cartItems)), @json(\App\Support\MetaPixel::newEventId('initiate_checkout')));</script>
+    @endpush
+@endif
 @php
     $defaultShippingCode = old(
         'shipping_method',

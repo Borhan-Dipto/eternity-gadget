@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Support\MetaPixel;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
@@ -126,6 +127,14 @@ class StorefrontApiController extends Controller
                     'url' => route('product.show', $product->slug),
                 ],
                 'cart' => $cart,
+                'pixel' => MetaPixel::enabled() ? [
+                    'event_id' => MetaPixel::newEventId('add_to_cart'),
+                    'params' => MetaPixel::productParams(
+                        $product,
+                        max(1, (int) $request->input('quantity', 1)),
+                        isset($added['unit_price_raw']) ? (float) $added['unit_price_raw'] : null
+                    ),
+                ] : null,
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -177,6 +186,7 @@ class StorefrontApiController extends Controller
                 'option_summary' => $item['option_summary'],
                 'quantity' => $item['quantity'],
                 'unit_price' => money_bd($item['unit_price']),
+                'unit_price_raw' => (float) $item['unit_price'],
                 'line_total' => money_bd($item['line_total']),
                 'image' => media_url($item['product']->primaryImage()),
                 'url' => route('product.show', $item['product']->slug),

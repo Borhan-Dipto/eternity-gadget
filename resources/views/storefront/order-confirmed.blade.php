@@ -3,6 +3,11 @@
 @section('title', 'Order Confirmed')
 
 @section('content')
+@if($trackPurchase ?? false)
+    @push('meta_pixel')
+        <script>window.egTrack('Purchase', @json(\App\Support\MetaPixel::orderParams($order)), @json(\App\Support\MetaPixel::purchaseEventId($order)));</script>
+    @endpush
+@endif
 @php
     $statusLabels = [
         'pending' => 'Pending',

@@ -1186,3 +1186,7 @@
 })();
 </script>
 @endpush
+
+@push('meta_pixel')
+    <script>window.egTrack('ViewContent', @json(\App\Support\MetaPixel::productParams($product)), @json(\App\Support\MetaPixel::newEventId('view_content')));</script>
+@endpush

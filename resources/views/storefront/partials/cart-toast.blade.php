@@ -170,6 +170,10 @@
                 document.dispatchEvent(new CustomEvent('cart:updated', { detail: data.cart }));
             }
 
+            if (data.pixel && window.egTrack) {
+                window.egTrack('AddToCart', data.pixel.params, data.pixel.event_id);
+            }
+
             showCartToast(data.product, preferCheckout);
 
             if (preferCheckout && data.redirect_checkout) {

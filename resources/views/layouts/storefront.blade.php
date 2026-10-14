@@ -1447,6 +1447,8 @@
 
     </style>
 
+    @include('storefront.partials.meta-pixel')
+
 </head>
 
 <body class="@if(request()->routeIs('home')) page-home @elseif(request()->routeIs('category.show')) page-category @elseif(request()->routeIs('product.show')) page-product @endif">

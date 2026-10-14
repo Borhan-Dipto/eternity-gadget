@@ -22,6 +22,7 @@ class SiteSettingForm
                     'contact' => 'Contact Details',
                     'footer' => 'Footer',
                     'seo' => 'SEO',
+                    'tracking' => 'Tracking & Pixels',
                     'general' => 'General',
                 ])
                 ->required(),
