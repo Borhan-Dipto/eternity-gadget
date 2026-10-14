@@ -1,0 +1,805 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Address;
+use App\Models\ContactMessage;
+use App\Models\Order;
+use App\Models\PaymentMethod;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\UserNotification;
+use App\Models\WishlistItem;
+use App\Services\CartService;
+use App\Services\OtpService;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+
+class AccountController extends Controller
+{
+    private const COMPARE_LIMIT = 4;
+
+    private const OTP_PURPOSE_REGISTER = 'phone_register';
+
+    private const OTP_PURPOSE_LOGIN = 'phone_login';
+
+    public function __construct(
+        private CartService $cartService,
+        private OtpService $otpService,
+    ) {}
+
+    public function account(): View|RedirectResponse
+    {
+        if (! Auth::check()) {
+            return redirect()->route('account.login');
+        }
+
+        $user = Auth::user();
+
+        return view('storefront.account.dashboard', [
+            'orders' => $user->orders()->with('items')->latest()->limit(10)->get(),
+            'notifications' => $user->notifications()->latest()->limit(5)->get(),
+            'unreadCount' => $user->notifications()->whereNull('read_at')->count(),
+        ]);
+    }
+
+    public function showPassword(): View
+    {
+        return view('storefront.account.password');
+    }
+
+    public function profile(): View
+    {
+        return view('storefront.account.profile', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'phone' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('users', 'phone')->ignore($user->id),
+            ],
+            'avatar' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $data['name'] = trim($data['first_name'] . ' ' . $data['last_name']);
+        unset($data['first_name'], $data['last_name']);
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            unset($data['avatar']);
+        }
+
+        $normalizedPhone = User::requireValidBangladeshMobile($data['phone'], 'phone');
+        if ($normalizedPhone !== $user->phone) {
+            $data['phone_verified_at'] = null;
+        }
+        $data['phone'] = $normalizedPhone;
+
+        $user->update($data);
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+        ]);
+
+        Auth::user()->update(['password' => $data['password']]);
+
+        return back()->with('success', 'Password updated successfully.');
+    }
+
+    public function deleteAccount(Request $request): RedirectResponse
+    {
+        $request->validate(['password' => ['required', 'current_password']]);
+
+        $user = Auth::user();
+        $userId = $user->id;
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        DB::table('sessions')->where('user_id', $userId)->delete();
+        User::query()->whereKey($userId)->delete();
+
+        return redirect()->route('home')->with('success', 'Your account has been deleted.');
+    }
+
+    public function addresses(): View
+    {
+        return view('storefront.account.addresses', [
+            'addresses' => Auth::user()->addresses()->orderByDesc('is_default')->get(),
+        ]);
+    }
+
+    public function storeAddress(Request $request): RedirectResponse
+    {
+        $data = $this->validateAddress($request);
+        $data['user_id'] = Auth::id();
+
+        if ($data['is_default'] ?? false) {
+            Auth::user()->addresses()->update(['is_default' => false]);
+        } elseif (! Auth::user()->addresses()->exists()) {
+            $data['is_default'] = true;
+        }
+
+        Address::create($data);
+
+        return back()->with('success', 'Address added.');
+    }
+
+    public function updateAddress(Request $request, Address $address): RedirectResponse
+    {
+        $this->authorizeAddress($address);
+        $data = $this->validateAddress($request, $address);
+
+        if ($data['is_default'] ?? false) {
+            Auth::user()->addresses()->whereKeyNot($address->id)->update(['is_default' => false]);
+        }
+
+        $address->update($data);
+
+        return back()->with('success', 'Address updated.');
+    }
+
+    public function destroyAddress(Address $address): RedirectResponse
+    {
+        $this->authorizeAddress($address);
+        $wasDefault = $address->is_default;
+        $address->delete();
+
+        if ($wasDefault) {
+            Auth::user()->addresses()->first()?->update(['is_default' => true]);
+        }
+
+        return back()->with('success', 'Address removed.');
+    }
+
+    public function setDefaultAddress(Address $address): RedirectResponse
+    {
+        $this->authorizeAddress($address);
+        Auth::user()->addresses()->update(['is_default' => false]);
+        $address->update(['is_default' => true]);
+
+        return back()->with('success', 'Default address updated.');
+    }
+
+    public function paymentMethods(): View
+    {
+        return view('storefront.account.payment-methods', [
+            'paymentMethods' => Auth::user()->paymentMethods()->orderByDesc('is_default')->get(),
+        ]);
+    }
+
+    public function storePaymentMethod(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', Rule::in(['cod', 'card'])],
+            'label' => ['required', 'string', 'max:255'],
+            'last_four' => ['nullable', 'string', 'size:4'],
+            'is_default' => ['sometimes', 'boolean'],
+        ]);
+
+        if ($data['is_default'] ?? false) {
+            Auth::user()->paymentMethods()->update(['is_default' => false]);
+        } elseif (! Auth::user()->paymentMethods()->exists()) {
+            $data['is_default'] = true;
+        }
+
+        PaymentMethod::create([
+            'user_id' => Auth::id(),
+            'type' => $data['type'],
+            'label' => $data['label'],
+            'provider' => $data['type'] === 'cod' ? 'cod' : 'manual',
+            'token' => $data['type'] === 'cod' ? 'cod' : 'card_' . Str::random(16),
+            'last_four' => $data['last_four'] ?? null,
+            'is_default' => (bool) ($data['is_default'] ?? false),
+        ]);
+
+        return back()->with('success', 'Payment method saved.');
+    }
+
+    public function destroyPaymentMethod(PaymentMethod $paymentMethod): RedirectResponse
+    {
+        $this->authorizePaymentMethod($paymentMethod);
+        $wasDefault = $paymentMethod->is_default;
+        $paymentMethod->delete();
+
+        if ($wasDefault) {
+            Auth::user()->paymentMethods()->first()?->update(['is_default' => true]);
+        }
+
+        return back()->with('success', 'Payment method removed.');
+    }
+
+    public function setDefaultPaymentMethod(PaymentMethod $paymentMethod): RedirectResponse
+    {
+        $this->authorizePaymentMethod($paymentMethod);
+        Auth::user()->paymentMethods()->update(['is_default' => false]);
+        $paymentMethod->update(['is_default' => true]);
+
+        return back()->with('success', 'Default payment method updated.');
+    }
+
+    public function showPhoneRegister(): View
+    {
+        return view('storefront.account.phone-register');
+    }
+
+    public function registerPhone(Request $request): RedirectResponse
+    {
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'max:50'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $normalized = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        if (User::query()->where('phone', $normalized)->exists()) {
+            throw ValidationException::withMessages(['phone' => 'This phone number is already registered.']);
+        }
+
+        $otp = $this->otpService->generate($normalized, self::OTP_PURPOSE_REGISTER);
+        $this->otpService->send($otp);
+
+        session([
+            'phone_register' => [
+                'phone' => $normalized,
+                'name' => $data['name'],
+            ],
+        ]);
+
+        return back()->with('success', 'Verification code sent to your phone.');
+    }
+
+    public function verifyPhoneOtp(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:10'],
+        ]);
+
+        $pending = session('phone_register');
+        if (! $pending) {
+            return redirect()->route('account.phone.register')->withErrors(['phone' => 'Please start phone registration again.']);
+        }
+
+        $this->otpService->verify($pending['phone'], $data['code'], self::OTP_PURPOSE_REGISTER);
+
+        $user = User::create([
+            'name' => $pending['name'],
+            'phone' => $pending['phone'],
+            'phone_verified_at' => now(),
+            'email' => $pending['phone'] . '@phone.eternitygadget.local',
+            'password' => Str::password(32),
+            'role' => User::ROLE_CUSTOMER,
+            'is_admin' => false,
+        ]);
+
+        session()->forget('phone_register');
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->afterLogin($user);
+
+        return redirect()->route('account')->with('success', 'Phone registration complete.');
+    }
+
+    public function showPhoneLogin(): View
+    {
+        return view('storefront.account.phone-login');
+    }
+
+    public function loginPhone(Request $request): RedirectResponse
+    {
+        if ($request->filled('code')) {
+            return $this->verifyPhoneLogin($request);
+        }
+
+        $this->throttleAuth('phone-login:' . $request->ip(), 5, 60);
+
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate(['phone' => ['required', 'string', 'max:50']]);
+        $normalized = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        if (! User::query()->where('phone', $normalized)->exists()) {
+            RateLimiter::hit('phone-login:' . $request->ip(), 60);
+            throw ValidationException::withMessages(['phone' => 'No account found for this phone number.']);
+        }
+
+        $otp = $this->otpService->generate($normalized, self::OTP_PURPOSE_LOGIN);
+        $this->otpService->send($otp);
+        session(['phone_login' => $normalized]);
+
+        return back()->with('success', 'Verification code sent to your phone.');
+    }
+
+    public function showRegister(): View
+    {
+        return view('storefront.account.register');
+    }
+
+    public function register(Request $request): RedirectResponse
+    {
+        $this->throttleAuth('register:' . $request->ip(), 5, 60);
+
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+            'phone' => ['required', 'string', 'max:50', 'unique:users,phone'],
+            'marketing_opt_in' => ['sometimes', 'boolean'],
+            'captcha' => ['required', 'string', 'max:10'],
+            'agree' => ['accepted'],
+        ]);
+
+        $expectedCaptcha = strtolower((string) session('register_captcha', ''));
+        if ($expectedCaptcha === '' || strtolower($data['captcha']) !== $expectedCaptcha) {
+            throw ValidationException::withMessages([
+                'captcha' => 'The captcha code is incorrect. Please try again.',
+            ]);
+        }
+
+        session()->forget('register_captcha');
+
+        $data['name'] = trim($data['first_name'] . ' ' . $data['last_name']);
+        unset($data['first_name'], $data['last_name'], $data['agree'], $data['captcha']);
+
+        $data['phone'] = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'],
+            'marketing_opt_in' => $request->boolean('marketing_opt_in'),
+            'role' => User::ROLE_CUSTOMER,
+            'is_admin' => false,
+        ]);
+
+        event(new Registered($user));
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->afterLogin($user);
+        RateLimiter::clear('register:' . $request->ip());
+
+        return redirect()->route('account')->with('success', 'Welcome! Your account has been created.');
+    }
+
+    public function showLogin(): View
+    {
+        return view('storefront.account.login');
+    }
+
+    public function login(Request $request): RedirectResponse
+    {
+        $this->throttleAuth('login:' . $request->ip(), 5, 60);
+
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $remember = $request->boolean('remember');
+
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+            $this->afterLogin(Auth::user());
+            RateLimiter::clear('login:' . $request->ip());
+
+            return redirect()->intended(route('account'));
+        }
+
+        RateLimiter::hit('login:' . $request->ip(), 60);
+
+        throw ValidationException::withMessages([
+            'email' => 'These login details do not match our records.',
+        ]);
+    }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+
+    public function logoutAllDevices(Request $request): RedirectResponse
+    {
+        $userId = Auth::id();
+        $currentSessionId = $request->session()->getId();
+
+        DB::table('sessions')
+            ->where('user_id', $userId)
+            ->where('id', '!=', $currentSessionId)
+            ->delete();
+
+        return back()->with('success', 'Signed out of all other devices.');
+    }
+
+    public function showForgotPassword(): View
+    {
+        return view('storefront.account.forgot-password');
+    }
+
+    public function forgotPassword(Request $request): RedirectResponse
+    {
+        $request->validate(['email' => ['required', 'email']]);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('success', __($status))
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    public function showResetPassword(Request $request, string $token): View
+    {
+        return view('storefront.account.reset-password', [
+            'token' => $token,
+            'email' => $request->query('email', ''),
+        ]);
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill(['password' => $password])->save();
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('account.login')->with('success', __($status))
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    public function verifyEmailNotice(): View
+    {
+        return view('storefront.account.verify-email');
+    }
+
+    public function resendVerificationEmail(Request $request): RedirectResponse
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('account');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('success', 'Verification link sent.');
+    }
+
+    public function convertGuest(Request $request, Order $order): RedirectResponse
+    {
+        if ($order->user_id) {
+            return redirect()->route('order.confirmed', $order);
+        }
+
+        abort_unless(
+            session('last_order_id') === $order->id
+            || in_array($order->id, array_values(session('checkout_idempotency_orders', [])), true),
+            403
+        );
+
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+            'phone' => ['required', 'string', 'max:50', 'unique:users,phone'],
+            'marketing_opt_in' => ['sometimes', 'boolean'],
+        ]);
+
+        $data['phone'] = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'],
+            'marketing_opt_in' => $request->boolean('marketing_opt_in'),
+            'role' => User::ROLE_CUSTOMER,
+            'is_admin' => false,
+        ]);
+
+        $order->update(['user_id' => $user->id]);
+        event(new Registered($user));
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->afterLogin($user);
+
+        return redirect()->signedRoute('order.confirmed', ['order' => $order])->with('success', 'Account created and order linked.');
+    }
+
+    public function notifications(): View
+    {
+        return view('storefront.account.notifications', [
+            'notifications' => Auth::user()->notifications()->latest()->paginate(20),
+        ]);
+    }
+
+    public function markNotificationRead(UserNotification $notification): RedirectResponse
+    {
+        abort_unless($notification->user_id === Auth::id(), 403);
+        $notification->markAsRead();
+
+        return back()->with('success', 'Notification marked as read.');
+    }
+
+    public function markAllNotificationsRead(): RedirectResponse
+    {
+        Auth::user()->notifications()->whereNull('read_at')->update(['read_at' => now()]);
+
+        return back()->with('success', 'All notifications marked as read.');
+    }
+
+    public function compare(): View
+    {
+        $ids = array_slice(array_values(session('compare', [])), 0, self::COMPARE_LIMIT);
+        $products = Product::query()
+            ->whereIn('id', $ids)
+            ->where('is_active', true)
+            ->with(['images', 'options'])
+            ->get()
+            ->sortBy(fn (Product $p) => array_search($p->id, $ids, true))
+            ->values();
+
+        return view('storefront.compare', compact('products'));
+    }
+
+    public function contact(): View
+    {
+        return view('storefront.account.contact');
+    }
+
+    public function orderHistory(): View
+    {
+        return view('storefront.account.order-history', [
+            'orders' => Auth::user()->orders()->with('items')->latest()->paginate(15),
+        ]);
+    }
+
+    public function guestOrderTracking(): View
+    {
+        $order = null;
+
+        if ($orderId = session('tracked_order')) {
+            $order = Order::query()->with('items')->find($orderId);
+        }
+
+        return view('storefront.account.guest-tracking', compact('order'));
+    }
+
+    public function lookupGuestOrder(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'order_number' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        $order = Order::query()
+            ->where('order_number', $data['order_number'])
+            ->where('customer_email', $data['email'])
+            ->with('items')
+            ->first();
+
+        if (! $order) {
+            return back()->withErrors(['order_number' => 'No order found with those details.'])->withInput();
+        }
+
+        session(['tracked_order' => $order->id]);
+
+        return redirect()->route('account.guest-tracking');
+    }
+
+    public function downloads(): View
+    {
+        $orders = Auth::user()
+            ->orders()
+            ->where('payment_status', Order::PAYMENT_STATUS_PAID)
+            ->latest()
+            ->get();
+
+        return view('storefront.account.downloads', compact('orders'));
+    }
+
+    public function recurringPayments(): View
+    {
+        return view('storefront.account.recurring-payments');
+    }
+
+    public function rewardPoints(): View
+    {
+        $user = Auth::user();
+        $points = (int) floor($user->orders()
+            ->where('status', Order::STATUS_DELIVERED)
+            ->sum('total') / 100);
+
+        return view('storefront.account.reward-points', compact('points'));
+    }
+
+    public function transactions(): View
+    {
+        $orders = Auth::user()
+            ->orders()
+            ->whereIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED])
+            ->latest()
+            ->paginate(20);
+
+        return view('storefront.account.transactions', compact('orders'));
+    }
+
+    public function newsletterSettings(): View
+    {
+        return view('storefront.account.newsletter', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function updateNewsletterSettings(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'marketing_opt_in' => ['sometimes', 'boolean'],
+        ]);
+
+        Auth::user()->update([
+            'marketing_opt_in' => $request->boolean('marketing_opt_in'),
+        ]);
+
+        return back()->with('success', 'Newsletter preferences updated.');
+    }
+
+    public function storeContact(Request $request): RedirectResponse
+    {
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'subject' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $data['phone'] = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        ContactMessage::create($data);
+
+        return back()->with('success', 'Thank you. We will get back to you soon.');
+    }
+
+    private function verifyPhoneLogin(Request $request): RedirectResponse
+    {
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'max:50'],
+            'code' => ['required', 'string', 'max:10'],
+        ]);
+
+        $normalized = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        $this->otpService->verify($normalized, $data['code'], self::OTP_PURPOSE_LOGIN);
+
+        $user = User::query()->where('phone', $normalized)->firstOrFail();
+        session()->forget('phone_login');
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->afterLogin($user);
+        RateLimiter::clear('phone-login:' . $request->ip());
+
+        return redirect()->intended(route('account'));
+    }
+
+    private function afterLogin(User $user): void
+    {
+        $this->cartService->mergeGuestToUser($user->id);
+        $this->mergeGuestWishlist($user->id);
+    }
+
+    private function mergeGuestWishlist(int $userId): void
+    {
+        $sessionId = session()->getId();
+
+        WishlistItem::query()
+            ->where('session_id', $sessionId)
+            ->each(function (WishlistItem $item) use ($userId) {
+                WishlistItem::updateOrCreate(
+                    ['user_id' => $userId, 'product_id' => $item->product_id],
+                    ['session_id' => null]
+                );
+                $item->delete();
+            });
+    }
+
+    private function validateAddress(Request $request, ?Address $address = null): array
+    {
+        User::mergeNormalizedPhoneInput($request);
+
+        $data = $request->validate([
+            'label' => ['nullable', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'line1' => ['required', 'string', 'max:255'],
+            'line2' => ['nullable', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:100'],
+            'state' => ['nullable', 'string', 'max:100'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'country' => ['nullable', 'string', 'max:2'],
+            'is_default' => ['sometimes', 'boolean'],
+        ]);
+
+        $data['phone'] = User::requireValidBangladeshMobile($data['phone'], 'phone');
+
+        return $data;
+    }
+
+    private function authorizeAddress(Address $address): void
+    {
+        abort_unless($address->user_id === Auth::id(), 403);
+    }
+
+    private function authorizePaymentMethod(PaymentMethod $paymentMethod): void
+    {
+        abort_unless($paymentMethod->user_id === Auth::id(), 403);
+    }
+
+    private function throttleAuth(string $key, int $maxAttempts, int $decaySeconds): void
+    {
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            $seconds = RateLimiter::availableIn($key);
+            throw ValidationException::withMessages([
+                'email' => "Too many attempts. Please try again in {$seconds} seconds.",
+            ]);
+        }
+    }
+}

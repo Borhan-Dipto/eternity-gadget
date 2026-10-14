@@ -1,0 +1,14 @@
+﻿import { chromium, devices } from 'playwright';
+const browser = await chromium.launch();
+const out = 'storage/app/screenshots';
+const mobile = await browser.newPage({ ...devices['iPhone 12'] });
+await mobile.goto('http://127.0.0.1:8000/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+await mobile.waitForTimeout(1000);
+await mobile.locator('.chat-trigger-btn').click();
+await mobile.waitForTimeout(600);
+await mobile.screenshot({ path: `${out}/07-mobile-chat-widget.png`, fullPage: false });
+const phoneHref = await mobile.locator('.chat-popup-link.phone').getAttribute('href');
+const waHref = await mobile.locator('.chat-popup-link.whatsapp').getAttribute('href');
+const msgHref = await mobile.locator('.chat-popup-link.facebook').getAttribute('href');
+console.log(JSON.stringify({ phoneHref, waHref, msgHref }));
+await browser.close();
