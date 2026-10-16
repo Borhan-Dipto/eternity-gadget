@@ -537,7 +537,7 @@
                             <span id="summary-subtotal">{{ money_bd($subtotal) }}</span>
                         </div>
                         <div class="co-total-line">
-                            <span id="summary-shipping-label">{{ $defaultShippingCode ? $defaultShippingLabel : 'Delivery charge' }}</span>
+                            <span id="summary-shipping-label">{{ $defaultShippingCode ? $defaultShippingLabel : 'ডেলিভারি চার্জ' }}</span>
                             <span id="summary-shipping">{{ $defaultShippingCode ? money_bd($shippingEstimate) : 'এলাকা নির্বাচন করুন' }}</span>
                         </div>
                         @if((float) $taxEstimate > 0)
