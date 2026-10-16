@@ -103,7 +103,7 @@ class AppServiceProvider extends ServiceProvider
         if (file_exists($link) && ! is_link($link)) {
             MediaUploadLogger::warning('storage.real_directory', [
                 'path' => $link,
-                'message' => 'public/storage is a real folder (not symlink). Images are served via /storage Laravel route. Delete this folder and visit fix-storage-link.php to create a proper symlink.',
+                'message' => 'public/storage is a real folder (not symlink). Images are served via /storage Laravel route. Delete this folder and run: php artisan storage:link',
             ]);
 
             return;
