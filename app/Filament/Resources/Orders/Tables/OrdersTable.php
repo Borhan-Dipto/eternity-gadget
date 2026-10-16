@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Models\Order;
+use App\Support\AdSource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -10,6 +11,8 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class OrdersTable
@@ -71,13 +74,28 @@ class OrdersTable
                 TextColumn::make('total')
                     ->money('BDT')
                     ->sortable(),
+                TextColumn::make('ad_source')
+                    ->label('Source')
+                    ->state(fn (Order $record): string => AdSource::label($record->utm_source, $record->utm_medium, $record->fbclid, $record->gclid, $record->referrer))
+                    ->description(fn (Order $record): ?string => $record->utm_campaign)
+                    ->badge()
+                    ->color(fn (string $state): string => str_starts_with($state, 'facebook') || str_starts_with($state, 'fb') || str_starts_with($state, 'instagram') ? 'info' : ($state === 'direct' ? 'gray' : 'success'))
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->label('Ordered'),
             ])
             ->filters([
-                //
+                SelectFilter::make('utm_source')
+                    ->label('Ad source')
+                    ->options(fn (): array => Order::query()->whereNotNull('utm_source')->distinct()->orderBy('utm_source')->pluck('utm_source', 'utm_source')->all()),
+                SelectFilter::make('utm_campaign')
+                    ->label('Campaign')
+                    ->options(fn (): array => Order::query()->whereNotNull('utm_campaign')->distinct()->orderBy('utm_campaign')->pluck('utm_campaign', 'utm_campaign')->all()),
+                Filter::make('from_facebook_ad')
+                    ->label('From a Facebook ad click')
+                    ->query(fn ($query) => $query->whereNotNull('fbclid')),
             ])
             ->recordActions([
                 ViewAction::make(),

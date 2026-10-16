@@ -13,6 +13,7 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -126,10 +127,13 @@ class StorefrontController extends Controller
             }
         }
         $subtotal = (float) $cartItems->sum(fn (array $item) => $item['line_total']);
-        $defaultShipping = $shippingMethods->sortByDesc('base_cost')->first() ?? $shippingMethods->first();
-        $shippingEstimate = $defaultShipping
-            ? $defaultShipping->calculateCost($cartItems->sum(fn (array $item) => (float) ($item['product']->weight ?? 0) * $item['quantity']))
-            : (float) setting('shipping_cost', 0);
+        $cartWeight = (float) $cartItems->sum(fn (array $item) => (float) ($item['product']->weight ?? 0) * $item['quantity']);
+        // Exact cost per method (same formula the order uses), so the page never shows a different price than is charged.
+        $shippingCosts = $shippingMethods->mapWithKeys(fn (ShippingMethod $method) => [$method->code => $method->calculateCost($cartWeight)])->all();
+        // No delivery area is pre-selected: the customer must choose, so nobody is silently charged the wrong rate.
+        $selectedShipping = $shippingMethods->firstWhere('code', old('shipping_method'));
+        $defaultShipping = $selectedShipping ?? $shippingMethods->sortByDesc('base_cost')->first();
+        $shippingEstimate = $selectedShipping ? (float) $shippingCosts[$selectedShipping->code] : 0.0;
         $taxEstimate = $this->checkoutService->calculateTax($subtotal);
         $deliveryEstimate = $this->checkoutService->estimateDelivery($defaultShipping?->code);
 
@@ -140,6 +144,7 @@ class StorefrontController extends Controller
             'addresses',
             'subtotal',
             'shippingEstimate',
+            'shippingCosts',
             'taxEstimate',
             'deliveryEstimate',
         ));
@@ -153,11 +158,20 @@ class StorefrontController extends Controller
             'customer_email' => ['nullable', 'email', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:50'],
             'shipping_address' => ['required', 'string', 'max:2000'],
-            'shipping_method' => ['nullable', 'string', 'max:50'],
-            'payment_method' => ['nullable', 'string', 'max:50'],
+            'shipping_method' => [
+                'required',
+                'string',
+                Rule::in(ShippingMethod::query()->where('is_active', true)->pluck('code')->all()),
+            ],
+            'payment_method' => ['required', 'string', Rule::in(['cod'])],
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'terms_agreed' => ['accepted'],
+        ], [
+            'shipping_method.required' => 'ডেলিভারি এলাকা নির্বাচন করুন।',
+            'shipping_method.in' => 'ডেলিভারি এলাকা সঠিক নয়, আবার নির্বাচন করুন।',
+            'payment_method.required' => 'পেমেন্ট পদ্ধতি নির্বাচন করুন।',
+            'payment_method.in' => 'এই পেমেন্ট পদ্ধতি এখন চালু নেই।',
         ]);
 
         $idempotencyKey = $data['idempotency_key'];
@@ -173,6 +187,9 @@ class StorefrontController extends Controller
     {
         $order->confirmIfExpired()->load('items');
         $trackPurchase = MetaPixel::shouldTrackPurchase($order);
+        if ($trackPurchase) {
+            MetaPixel::matchOrderCustomer($order);
+        }
 
         return view('storefront.order-confirmed', compact('order', 'trackPurchase'));
     }

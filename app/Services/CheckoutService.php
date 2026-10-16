@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Jobs\NewOrderAlertJob;
+use App\Support\AdSource;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductOption;
@@ -158,6 +160,7 @@ class CheckoutService
                     'order_number' => 'IG-' . now()->format('ymd') . '-' . Str::upper(Str::random(6)),
                     'user_id' => Auth::id(),
                     'status' => Order::STATUS_PENDING,
+                    ...AdSource::forOrder(request()),
                     'subtotal' => $subtotal,
                     'discount' => $discount,
                     'coupon_code' => $couponResult['coupon']?->code,
@@ -203,6 +206,7 @@ class CheckoutService
                 ['order_id' => $order->id]
             );
             $this->notificationService->sendOrderEmail($order);
+            NewOrderAlertJob::dispatch($order->id)->afterResponse();
             $this->notificationService->sendSms(
                 $order->customer_phone,
                 'Your Eternity Gadget order ' . $order->order_number . ' has been received. Total: ' . money_bd($order->total)

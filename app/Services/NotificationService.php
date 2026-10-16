@@ -32,7 +32,8 @@ class NotificationService
 
     public function sendOrderEmail(Order $order, string $template = 'confirmation'): void
     {
-        SendOrderEmailJob::dispatch($order->id, $template);
+        // Sent after the page has been returned, so the customer never waits on the mail server.
+        SendOrderEmailJob::dispatch($order->id, $template)->afterResponse();
     }
 
     public function sendSms(?string $phone, string $message): void

@@ -1,7 +1,14 @@
 @extends('layouts.storefront')
 
 @section('title', $product->meta_title ?: $product->name)
-@section('meta_description', $product->meta_description ?: $product->short_description)
+@section('meta_description', $product->meta_description ?: ($product->short_description ?: $product->name . ' — ' . money_bd($product->effectivePrice()) . ' | ' . setting('site_name', 'Eternity Gadget')))
+@section('og_type', 'product')
+@section('og_image', media_url($product->primaryImage()))
+@section('og_extra')
+    <meta property="product:price:amount" content="{{ number_format($product->effectivePrice(), 2, '.', '') }}">
+    <meta property="product:price:currency" content="BDT">
+    <meta property="product:retailer_item_id" content="{{ $product->id }}">
+@endsection
 
 @section('content')
 @php

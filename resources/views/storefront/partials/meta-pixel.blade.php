@@ -9,7 +9,7 @@
         t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
         document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-        fbq('init', @json($metaPixelId));
+        fbq('init', @json($metaPixelId), @json((object) \App\Support\MetaPixel::userData()));
         fbq('track', 'PageView');
 
         // Helper used by storefront scripts: egTrack('AddToCart', {...}, 'event-id')

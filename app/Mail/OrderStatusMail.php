@@ -33,7 +33,9 @@ class OrderStatusMail extends Mailable
         return new Content(
             htmlString: '<p>Hi ' . e($this->order->customer_name) . ',</p>'
                 . '<p>Your order <strong>' . e($this->order->order_number) . '</strong> '
-                . 'changed from <em>' . e($this->previousStatus) . '</em> to <strong>' . e($this->newStatus) . '</strong>.</p>',
+                . ($this->previousStatus !== ''
+                    ? 'changed from <em>' . e($this->previousStatus) . '</em> to <strong>' . e($this->newStatus) . '</strong>.</p>'
+                    : 'is now <strong>' . e(ucfirst(str_replace('_', ' ', $this->newStatus))) . '</strong>.</p>'),
         );
     }
 }

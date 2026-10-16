@@ -12,6 +12,28 @@
 
     <title>@yield('title', setting('site_name', 'Eternity Gadget'))</title>
 
+    @php
+        $seoSiteName = setting('site_name', 'Eternity Gadget');
+        $seoTitle = trim($__env->yieldContent('title')) ?: $seoSiteName;
+        $seoDescription = trim($__env->yieldContent('meta_description')) ?: setting('meta_description', $seoSiteName);
+        $seoImage = trim($__env->yieldContent('og_image')) ?: media_url(setting('og_image') ?: setting('logo'));
+        $seoNoindex = request()->routeIs('cart', 'checkout', 'checkout.*', 'account.*', 'orders.*', 'order.confirmed', 'wishlist', 'compare', 'search');
+    @endphp
+    <link rel="canonical" href="{{ url()->current() }}">
+    @if($seoNoindex)
+        <meta name="robots" content="noindex, follow">
+    @endif
+    {{-- Facebook / WhatsApp / Messenger link previews --}}
+    <meta property="og:site_name" content="{{ $seoSiteName }}">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($seoDescription), 200) }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ $seoImage }}">
+    <meta property="og:locale" content="en_US">
+    @yield('og_extra')
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="icon" href="{{ media_url(setting('favicon')) }}">
 
     <link rel="manifest" href="{{ asset('manifest.json') }}">
@@ -1679,6 +1701,10 @@
 
     <div class="container mt-3"><div class="alert alert-success">{{ session('success') }}</div></div>
 
+@endif
+
+@if(session('error'))
+    <div class="container mt-3"><div class="alert alert-danger">{{ session('error') }}</div></div>
 @endif
 
 @if(isset($errors) && $errors->any())

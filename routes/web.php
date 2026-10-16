@@ -42,7 +42,7 @@ Route::controller(StorefrontController::class)->group(function () {
     Route::post('/cart/save-for-later', 'saveForLater')->name('cart.save-for-later');
     Route::post('/cart/move-to-cart', 'moveToCart')->name('cart.move-to-cart');
     Route::get('/checkout', 'checkout')->name('checkout');
-    Route::post('/checkout', 'placeOrder')->name('checkout.place');
+    Route::post('/checkout', 'placeOrder')->middleware('throttle:checkout')->name('checkout.place');
     Route::get('/order/{order}/confirmed', 'orderConfirmed')->name('order.confirmed')->middleware('signed');
 
     Route::get('/wishlist', 'wishlist')->name('wishlist');

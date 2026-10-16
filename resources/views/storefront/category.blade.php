@@ -1,9 +1,10 @@
 @extends('layouts.storefront')
 
 @section('title', $category->meta_title ?: $category->name)
-@section('meta_description', $category->meta_description)
+@section('meta_description', $category->meta_description ?: ($category->name . ' — ' . setting('site_name', 'Eternity Gadget') . ', Dhaka. Cash on delivery all over Bangladesh.'))
 
 @section('content')
+<h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ $category->name }}</h1>
 <style>
     .cat-page { padding: 24px 0 48px; }
 

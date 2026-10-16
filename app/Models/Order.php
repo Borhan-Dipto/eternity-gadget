@@ -54,6 +54,19 @@ class Order extends Model
         'total',
         'notes',
         'delivered_at',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'utm_term',
+        'fbclid',
+        'gclid',
+        'landing_page',
+        'referrer',
+        'fbp',
+        'fbc',
+        'client_ip',
+        'user_agent',
     ];
 
     protected function casts(): array

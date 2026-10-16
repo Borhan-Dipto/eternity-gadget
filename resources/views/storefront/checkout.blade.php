@@ -3,16 +3,14 @@
 @section('title', __('messages.checkout'))
 
 @section('content')
-@if($cartItems->isNotEmpty())
+@if($cartItems->isNotEmpty() && ! session()->hasOldInput() && ! $errors->any())
+    {{-- Only on the first view; a reload after a form error is the same checkout, not a new one. --}}
     @push('meta_pixel')
         <script>window.egTrack('InitiateCheckout', @json(\App\Support\MetaPixel::cartParams($cartItems)), @json(\App\Support\MetaPixel::newEventId('initiate_checkout')));</script>
     @endpush
 @endif
 @php
-    $defaultShippingCode = old(
-        'shipping_method',
-        $shippingMethods->sortByDesc('base_cost')->first()?->code ?? $shippingMethods->first()?->code
-    );
+    $defaultShippingCode = old('shipping_method');
     $initialTotal = $subtotal + $shippingEstimate + $taxEstimate;
 
     $co = [
@@ -456,9 +454,9 @@
                                 $methodLabel = $shippingDisplayNames[$method->code] ?? $method->name;
                             @endphp
                             <label class="co-radio-option">
-                                <input type="radio" name="shipping_method" value="{{ $method->code }}" data-name="{{ $methodLabel }}" data-cost="{{ $method->base_cost }}" @checked(old('shipping_method', $defaultShippingCode) === $method->code)>
+                                <input type="radio" name="shipping_method" value="{{ $method->code }}" data-name="{{ $methodLabel }}" data-cost="{{ $shippingCosts[$method->code] ?? $method->base_cost }}" @checked($defaultShippingCode === $method->code) @if($loop->first) required @endif>
                                 <span class="co-radio-label">{{ $methodLabel }}</span>
-                                <span class="co-radio-price">{{ money_bd($method->base_cost) }}</span>
+                                <span class="co-radio-price">{{ money_bd($shippingCosts[$method->code] ?? $method->base_cost) }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -539,9 +537,15 @@
                             <span id="summary-subtotal">{{ money_bd($subtotal) }}</span>
                         </div>
                         <div class="co-total-line">
-                            <span id="summary-shipping-label">{{ $defaultShippingLabel }}</span>
-                            <span id="summary-shipping">{{ money_bd($shippingEstimate) }}</span>
+                            <span id="summary-shipping-label">{{ $defaultShippingCode ? $defaultShippingLabel : 'Delivery charge' }}</span>
+                            <span id="summary-shipping">{{ $defaultShippingCode ? money_bd($shippingEstimate) : 'এলাকা নির্বাচন করুন' }}</span>
                         </div>
+                        @if((float) $taxEstimate > 0)
+                            <div class="co-total-line">
+                                <span>Tax ({{ rtrim(rtrim(number_format((float) setting('tax_rate', '0'), 2), '0'), '.') }}%)</span>
+                                <span id="summary-tax">{{ money_bd($taxEstimate) }}</span>
+                            </div>
+                        @endif
                         <div class="co-total-line grand">
                             <span>{{ $co['total'] }}</span>
                             <span id="summary-total">{{ money_bd($initialTotal) }}</span>
@@ -571,7 +575,7 @@
         const shipping = selectedShipping ? parseFloat(selectedShipping.dataset.cost || '0') : 0;
         const total = subtotal + shipping + taxEstimate;
 
-        document.getElementById('summary-shipping').textContent = formatMoney(shipping);
+        document.getElementById('summary-shipping').textContent = selectedShipping ? formatMoney(shipping) : 'এলাকা নির্বাচন করুন';
         document.getElementById('summary-total').textContent = formatMoney(total);
 
         const label = document.getElementById('summary-shipping-label');

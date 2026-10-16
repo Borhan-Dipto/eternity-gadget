@@ -68,7 +68,7 @@
         </tbody>
     </table>
 
-    <p>Subtotal: {{ money_bd($order->subtotal) }} | Shipping: {{ money_bd($order->shipping_cost) }} | Total: <strong>{{ money_bd($order->total) }}</strong></p>
+    <p>Subtotal: {{ money_bd($order->subtotal) }}@if((float) $order->discount > 0) | Discount: -{{ money_bd($order->discount) }}@endif | Shipping: {{ money_bd($order->shipping_cost) }}@if((float) $order->tax_amount > 0) | Tax: {{ money_bd($order->tax_amount) }}@endif | Total: <strong>{{ money_bd($order->total) }}</strong></p>
 
     <div class="order-actions-row">
         <a href="{{ $order->invoiceUrl() }}" class="order-btn" target="_blank" rel="noopener">Invoice</a>

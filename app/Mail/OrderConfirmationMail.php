@@ -27,15 +27,8 @@ class OrderConfirmationMail extends Mailable
 
     public function content(): Content
     {
-        $items = $this->order->items
-            ->map(fn ($item) => e($item->product_name) . ' × ' . $item->quantity . ' — ' . money_bd($item->total))
-            ->implode('<br>');
+        $this->order->loadMissing('items');
 
-        return new Content(
-            htmlString: '<p>Thank you for your order, ' . e($this->order->customer_name) . '.</p>'
-                . '<p><strong>Order:</strong> ' . e($this->order->order_number) . '</p>'
-                . '<p><strong>Total:</strong> ' . money_bd($this->order->total) . '</p>'
-                . '<p>' . $items . '</p>',
-        );
+        return new Content(view: 'emails.order-confirmation', with: ['order' => $this->order]);
     }
 }

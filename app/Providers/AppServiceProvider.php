@@ -10,7 +10,10 @@ use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Observers\ProductObserver;
 use App\Support\MediaUploadLogger;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -25,6 +28,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Stops bots from flooding the shop with fake cash-on-delivery orders.
+        // Per phone number as well as per IP, because many Bangladeshi mobile users share one IP.
+        RateLimiter::for('checkout', function (Request $request) {
+            $phone = preg_replace('/\D/', '', (string) $request->input('customer_phone'));
+
+            return [
+                Limit::perMinute(10)->by('checkout-ip:' . $request->ip()),
+                Limit::perHour(4)->by('checkout-phone:' . ($phone !== '' ? $phone : $request->ip())),
+            ];
+        });
+
         $this->ensureMediaStorageReady();
 
         Product::observe(ProductObserver::class);

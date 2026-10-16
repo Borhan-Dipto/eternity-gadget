@@ -139,4 +139,41 @@ class MetaPixel
 
         return true;
     }
+
+    /** Remember the order's customer so the pixel can send their details for matching on this page. */
+    public static function matchOrderCustomer(Order $order): void
+    {
+        request()->attributes->set('meta_pixel_order', $order);
+    }
+
+    /**
+     * Advanced Matching: customer details the pixel hashes (SHA-256) in the browser before sending,
+     * so Meta can connect the purchase to the person who saw the ad. Phone is the key identifier in Bangladesh.
+     *
+     * @return array<string, string>
+     */
+    public static function userData(): array
+    {
+        $order = request()->attributes->get('meta_pixel_order');
+        $user = auth()->user();
+
+        $phone = $order?->customer_phone ?: $user?->phone;
+        $email = $order?->customer_email ?: $user?->email;
+        $name = trim((string) ($order?->customer_name ?: $user?->name));
+        $nameParts = $name !== '' ? preg_split('/\s+/u', mb_strtolower($name)) : [];
+
+        $digits = preg_replace('/\D/', '', (string) $phone);
+        if (str_starts_with($digits, '01') && strlen($digits) === 11) {
+            $digits = '88' . $digits;
+        }
+
+        return array_filter([
+            'ph' => strlen($digits) >= 11 ? $digits : null,
+            'em' => $email && filter_var($email, FILTER_VALIDATE_EMAIL) ? mb_strtolower(trim($email)) : null,
+            'fn' => $nameParts[0] ?? null,
+            'ln' => count($nameParts) > 1 ? end($nameParts) : null,
+            'country' => 'bd',
+            'external_id' => $user ? 'user_' . $user->id : null,
+        ], fn ($v) => $v !== null && $v !== '');
+    }
 }

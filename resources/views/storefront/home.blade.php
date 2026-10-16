@@ -3,6 +3,7 @@
 @section('title', setting('meta_title', setting('site_name', 'Eternity Gadget')))
 
 @section('content')
+<h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ setting('site_name', 'Eternity Gadget') }} — premium phone cases, chargers and gadgets in Bangladesh</h1>
     @if($sliders->isNotEmpty())
         <section class="hero-carousel" id="heroCarousel" aria-label="Featured banners">
             <div class="hero-carousel-track" id="heroCarouselTrack">

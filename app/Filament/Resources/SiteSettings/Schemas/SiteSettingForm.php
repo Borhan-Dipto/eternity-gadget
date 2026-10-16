@@ -23,6 +23,8 @@ class SiteSettingForm
                     'footer' => 'Footer',
                     'seo' => 'SEO',
                     'tracking' => 'Tracking & Pixels',
+                    'notifications' => 'Order Alerts',
+                    'checkout' => 'Checkout',
                     'general' => 'General',
                 ])
                 ->required(),

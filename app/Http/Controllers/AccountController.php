@@ -252,13 +252,21 @@ class AccountController extends Controller
         return back()->with('success', 'Default payment method updated.');
     }
 
-    public function showPhoneRegister(): View
+    public function showPhoneRegister(): View|RedirectResponse
     {
+        if (! $this->phoneOtpAvailable()) {
+            return redirect()->route('account.login')->with('error', 'ফোন দিয়ে লগইন এখন বন্ধ আছে। ইমেইল দিয়ে লগইন করুন।');
+        }
+
         return view('storefront.account.phone-register');
     }
 
     public function registerPhone(Request $request): RedirectResponse
     {
+        if (! $this->phoneOtpAvailable()) {
+            return redirect()->route('account.login')->with('error', 'ফোন দিয়ে লগইন এখন বন্ধ আছে। ইমেইল দিয়ে লগইন করুন।');
+        }
+
         User::mergeNormalizedPhoneInput($request);
 
         $data = $request->validate([
@@ -287,6 +295,10 @@ class AccountController extends Controller
 
     public function verifyPhoneOtp(Request $request): RedirectResponse
     {
+        if (! $this->phoneOtpAvailable()) {
+            return redirect()->route('account.login')->with('error', 'ফোন দিয়ে লগইন এখন বন্ধ আছে। ইমেইল দিয়ে লগইন করুন।');
+        }
+
         $data = $request->validate([
             'code' => ['required', 'string', 'max:10'],
         ]);
@@ -316,13 +328,21 @@ class AccountController extends Controller
         return redirect()->route('account')->with('success', 'Phone registration complete.');
     }
 
-    public function showPhoneLogin(): View
+    public function showPhoneLogin(): View|RedirectResponse
     {
+        if (! $this->phoneOtpAvailable()) {
+            return redirect()->route('account.login')->with('error', 'ফোন দিয়ে লগইন এখন বন্ধ আছে। ইমেইল দিয়ে লগইন করুন।');
+        }
+
         return view('storefront.account.phone-login');
     }
 
     public function loginPhone(Request $request): RedirectResponse
     {
+        if (! $this->phoneOtpAvailable()) {
+            return redirect()->route('account.login')->with('error', 'ফোন দিয়ে লগইন এখন বন্ধ আছে। ইমেইল দিয়ে লগইন করুন।');
+        }
+
         if ($request->filled('code')) {
             return $this->verifyPhoneLogin($request);
         }
@@ -801,5 +821,11 @@ class AccountController extends Controller
                 'email' => "Too many attempts. Please try again in {$seconds} seconds.",
             ]);
         }
+    }
+
+    /** Phone OTP needs a real SMS gateway. Until one is connected (Website Settings → sms_enabled = 1) the phone pages stay closed. */
+    private function phoneOtpAvailable(): bool
+    {
+        return setting('sms_enabled', '0') === '1';
     }
 }
