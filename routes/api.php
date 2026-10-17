@@ -26,3 +26,7 @@ Route::get('/header-counts', [StorefrontApiController::class, 'headerCounts'])
 
 Route::get('/products/{product}/reviews', [StorefrontApiController::class, 'productReviews'])
     ->name('api.product.reviews');
+
+Route::post('/checkout/coupon', [StorefrontApiController::class, 'checkCoupon'])
+    ->middleware('throttle:15,1')
+    ->name('api.checkout.coupon');

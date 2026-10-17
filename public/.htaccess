@@ -30,6 +30,36 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# Speed: send text files compressed (HTML/CSS/JS/JSON/SVG are 70-85% smaller)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript text/javascript application/json image/svg+xml application/manifest+json
+</IfModule>
+
+# Speed: let browsers keep images, fonts, CSS and JS instead of downloading them on every page.
+# (CSS links carry ?v=<file time>, product photos have unique names, so updates still show at once.)
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+</IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "\.(woff2|jpe?g|png|webp|gif)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "^(sw\.js|manifest\.json)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
 # Never serve logs, server config, database dumps, backups or hidden files
 <FilesMatch "(^\.|error_log$|\.(log|ini|sql|env|bak|old|sh|zip)$)">
     <IfModule mod_authz_core.c>

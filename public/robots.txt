@@ -1,2 +1,13 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /orders
+Disallow: /order/
+Disallow: /wishlist
+Disallow: /compare
+Disallow: /api/
+Disallow: /search
+
+Sitemap: https://eternitygadget.shop/sitemap.xml

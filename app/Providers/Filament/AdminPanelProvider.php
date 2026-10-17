@@ -30,9 +30,14 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile(isSimple: false)
+            ->brandName('Eternity Gadget')
+            ->favicon(asset('brand-icons/favicon-32.png'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#F1592A'),
             ])
+            // Red warning on every admin page while the admin password is a known weak one
+            ->renderHook(\Filament\View\PanelsRenderHook::CONTENT_START, fn (): string => \App\Support\WeakPasswordWarning::render())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

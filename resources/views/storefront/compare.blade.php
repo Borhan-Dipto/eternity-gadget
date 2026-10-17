@@ -21,7 +21,7 @@
                 <tr>
                     <td>ছবি</td>
                     @foreach($products as $product)
-                        <td><img src="{{ media_url($product->primaryImage()) }}" alt="{{ $product->name }}" style="max-width:120px"></td>
+                        <td><img src="{{ media_thumb($product->primaryImage(), 300) }}" alt="{{ $product->name }}" style="max-width:120px"></td>
                     @endforeach
                 </tr>
                 <tr>

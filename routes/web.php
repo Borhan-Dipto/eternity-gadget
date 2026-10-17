@@ -15,6 +15,9 @@ Route::get('/storage/{path}', [StorageController::class, 'serve'])
     ->where('path', '.*')
     ->name('storage.serve');
 
+Route::get('/thumb/{width}/{path}', [\App\Http\Controllers\ThumbnailController::class, 'show'])
+    ->whereNumber('width')->where('path', '.*')->name('media.thumb');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/captcha/review', [ReviewCaptchaController::class, 'show'])->name('captcha.review');
 Route::get('/captcha/register', [ReviewCaptchaController::class, 'showRegister'])->name('captcha.register');

@@ -27,4 +27,6 @@ Homestead.yaml
 Thumbs.db
 *.sql
 .DS_Store
-.phpunit.result.cache
+.phpunit.result.cache.env.*
+!.env.example
+!.env.production.example

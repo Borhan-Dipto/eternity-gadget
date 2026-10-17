@@ -11,7 +11,10 @@
                     <div class="hero-carousel-slide">
                         <a href="{{ $slider->button_url ?: route('search') }}">
                             <img
-                                src="{{ media_url($slider->image) }}"
+                                src="{{ media_thumb($slider->image, 1000) }}"
+                                srcset="{{ media_thumb($slider->image, 1000) }} 1000w, {{ media_url($slider->image) }} 1600w"
+                                sizes="100vw"
+                                decoding="async"
                                 alt="{{ $slider->title }}"
                                 @if($index === 0) fetchpriority="high" @endif
                                 loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
@@ -43,7 +46,7 @@
         <div class="category-grid">
             @foreach($featuredCategories as $category)
                 <a class="category-card" href="{{ route('category.show', $category->slug) }}">
-                    <img src="{{ media_url($category->image) }}" alt="{{ $category->name }}">
+                    <img src="{{ media_thumb($category->image, 300) }}" alt="{{ $category->name }}" loading="lazy" decoding="async">
                     <h4>{{ $category->name }}</h4>
                 </a>
             @endforeach
@@ -58,7 +61,7 @@
                 <div class="category-grid">
                     @foreach($featuredCategories as $category)
                         <a class="category-card" href="{{ route('category.show', $category->slug) }}">
-                            <img src="{{ media_url($category->image) }}" alt="{{ $category->name }}">
+                            <img src="{{ media_thumb($category->image, 300) }}" alt="{{ $category->name }}" loading="lazy" decoding="async">
                             <h4>{{ $category->name }}</h4>
                         </a>
                     @endforeach

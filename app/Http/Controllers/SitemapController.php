@@ -13,8 +13,6 @@ class SitemapController extends Controller
     {
         $urls = collect([
             ['loc' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily'],
-            ['loc' => route('search'), 'priority' => '0.8', 'changefreq' => 'weekly'],
-            ['loc' => route('cart'), 'priority' => '0.5', 'changefreq' => 'monthly'],
         ]);
 
         Category::query()->where('is_active', true)->orderBy('sort_order')->each(function (Category $category) use ($urls) {

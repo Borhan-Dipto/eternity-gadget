@@ -106,7 +106,7 @@
         <div class="od-card-title">প্রোডাক্ট ({{ $order->items->sum('quantity') }}টি)</div>
         @foreach($order->items as $item)
             <div class="od-item">
-                <img src="{{ media_url($item->product?->primaryImage()) }}" alt="">
+                <img src="{{ media_thumb($item->product?->primaryImage(), 300) }}" alt="" loading="lazy">
                 <div class="od-item-info">
                     <div class="od-item-name">{{ $item->product_name }}</div>
                     <div class="od-item-meta">

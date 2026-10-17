@@ -67,7 +67,8 @@ class CheckoutService
         $rate = (float) setting('tax_rate', '0');
         $taxable = max(0, $subtotal - $discount);
 
-        return round($taxable * ($rate / 100), 2);
+        // Whole taka: what the page shows is exactly what the courier collects
+        return round($taxable * ($rate / 100));
     }
 
     /**

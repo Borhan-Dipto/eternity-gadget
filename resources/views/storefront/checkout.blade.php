@@ -351,6 +351,14 @@
     .co-reward-info { cursor: default; border-style: solid; border-color: #f1e2d3; }
     .co-delivery-note { margin: 10px 2px 0; font-size: 13px; color: #555; text-align: center; }
     .co-policy-note { margin: 12px 2px 0; font-size: 12.5px; color: #666; text-align: center; line-height: 1.55; }
+    .co-coupon { margin: 16px 0 0; }
+    .co-coupon-toggle { background: none; border: 0; color: var(--brand); font-weight: 600; font-size: 14px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+    .co-coupon-row { display: flex; gap: 8px; }
+    .co-coupon-row input { flex: 1; min-width: 0; padding: 11px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; }
+    .co-coupon-row button { padding: 0 16px; border: 0; border-radius: 8px; background: #111; color: #fff; font-size: 14px; font-family: inherit; cursor: pointer; }
+    .co-coupon-msg { font-size: 13px; margin-top: 6px; }
+    .co-coupon-msg.ok { color: #1a7f45; }
+    .co-coupon-msg.err { color: #c0392b; }
     .co-free-note { margin-top: 10px; padding: 9px 12px; border-radius: 8px; background: #edf8f1; color: #1a5c32; font-size: 13px; text-align: center; }
 
     .co-total-line {
@@ -481,6 +489,18 @@
                         @endif
                     </div>
 
+                    @if(\App\Models\Coupon::query()->where('is_active', true)->exists())
+                        <div class="co-coupon" id="co-coupon">
+                            <button type="button" class="co-coupon-toggle" id="co-coupon-toggle" @if(old('coupon_code')) hidden @endif>🏷️ কুপন কোড আছে?</button>
+                            <div class="co-coupon-row" id="co-coupon-row" @if(! old('coupon_code')) hidden @endif>
+                                <input type="text" id="co-coupon-input" value="{{ old('coupon_code') }}" placeholder="কুপন কোড লিখুন" autocomplete="off" autocapitalize="characters">
+                                <button type="button" id="co-coupon-apply">প্রয়োগ করুন</button>
+                            </div>
+                            <input type="hidden" name="coupon_code" id="co-coupon-code" value="{{ old('coupon_code') }}">
+                            <div class="co-coupon-msg" id="co-coupon-msg" aria-live="polite"></div>
+                        </div>
+                    @endif
+
                     @if($reward['enabled'])
                         @if($reward['redeemable'] > 0)
                             <label class="co-reward">
@@ -533,7 +553,7 @@
                             </form>
 
                             <div class="co-product-row">
-                                <img class="co-product-thumb" src="{{ media_url($item['product']->primaryImage()) }}" alt="{{ $item['product']->name }}">
+                                <img class="co-product-thumb" src="{{ media_thumb($item['product']->primaryImage(), 300) }}" alt="{{ $item['product']->name }}">
                                 <div class="co-product-info">
                                     <div class="co-product-name">{{ $item['product']->name }}</div>
                                     @if($optionLines->isNotEmpty())
@@ -568,6 +588,10 @@
                         <div class="co-total-line">
                             <span>{{ $co['sub_total'] }}</span>
                             <span id="summary-subtotal">{{ money_bd($subtotal) }}</span>
+                        </div>
+                        <div class="co-total-line" id="summary-coupon-line" hidden>
+                            <span>কুপন ছাড় <small id="summary-coupon-code"></small></span>
+                            <span id="summary-coupon" style="color:#1a7f45;"></span>
                         </div>
                         <div class="co-total-line" id="summary-reward-line" hidden>
                             <span>রিওয়ার্ড পয়েন্ট ছাড়</span>
@@ -607,6 +631,7 @@
     const subtotal = {{ (float) $subtotal }};
     const taxRate = {{ (float) setting('tax_rate', '0') }};
     const pointsBox = document.getElementById('use-points');
+    let couponDiscount = 0;
     const confirmLabel = @json($co['confirm_order']);
 
     function formatMoney(amount) {
@@ -617,8 +642,13 @@
         const selectedShipping = document.querySelector('input[name="shipping_method"]:checked');
         const shipping = selectedShipping ? parseFloat(selectedShipping.dataset.cost || '0') : 0;
         const rewardDiscount = pointsBox && pointsBox.checked ? parseFloat(pointsBox.dataset.discount || '0') : 0;
-        const tax = Math.round(Math.max(0, subtotal - rewardDiscount) * taxRate) / 100;
-        const total = subtotal - rewardDiscount + shipping + tax;
+        const tax = Math.round(Math.max(0, subtotal - couponDiscount - rewardDiscount) * taxRate / 100);
+        const total = Math.max(0, subtotal - couponDiscount - rewardDiscount) + shipping + tax;
+        const couponLine = document.getElementById('summary-coupon-line');
+        if (couponLine) {
+            couponLine.hidden = couponDiscount <= 0;
+            document.getElementById('summary-coupon').textContent = '−' + formatMoney(couponDiscount);
+        }
         const taxEl = document.getElementById('summary-tax');
         if (taxEl) taxEl.textContent = formatMoney(tax);
         const rewardLine = document.getElementById('summary-reward-line');
@@ -641,6 +671,44 @@
         radio.addEventListener('change', updateSummary);
     });
     pointsBox?.addEventListener('change', updateSummary);
+
+    // Coupon: checked on the server, then the totals update (the order is checked again when placed)
+    const couponCode = document.getElementById('co-coupon-code');
+    const couponInput = document.getElementById('co-coupon-input');
+    const couponMsg = document.getElementById('co-coupon-msg');
+    document.getElementById('co-coupon-toggle')?.addEventListener('click', (e) => {
+        e.currentTarget.hidden = true;
+        document.getElementById('co-coupon-row').hidden = false;
+        couponInput?.focus();
+    });
+    async function applyCoupon() {
+        const code = (couponInput?.value || '').trim();
+        if (!code) { couponMsg.textContent = 'কুপন কোড লিখুন।'; couponMsg.className = 'co-coupon-msg err'; return; }
+        couponMsg.textContent = 'যাচাই করা হচ্ছে...'; couponMsg.className = 'co-coupon-msg';
+        try {
+            const res = await fetch('{{ route('api.checkout.coupon') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' },
+                body: JSON.stringify({ code }),
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                couponDiscount = 0; couponCode.value = '';
+                couponMsg.textContent = data.message || 'কুপন কোডটি সঠিক নয়।'; couponMsg.className = 'co-coupon-msg err';
+            } else {
+                couponDiscount = parseFloat(data.discount || 0); couponCode.value = data.code;
+                document.getElementById('summary-coupon-code').textContent = '(' + data.code + ')';
+                couponMsg.textContent = '✓ ' + data.message; couponMsg.className = 'co-coupon-msg ok';
+                if (pointsBox) pointsBox.dataset.discount = data.reward_discount || 0;
+            }
+        } catch (err) {
+            couponMsg.textContent = 'এখন যাচাই করা যাচ্ছে না, আবার চেষ্টা করুন।'; couponMsg.className = 'co-coupon-msg err';
+        }
+        updateSummary();
+    }
+    document.getElementById('co-coupon-apply')?.addEventListener('click', applyCoupon);
+    couponInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+    if (couponCode && couponCode.value) applyCoupon();
     updateSummary();
 
     document.querySelectorAll('.co-qty-form').forEach((qtyForm) => {

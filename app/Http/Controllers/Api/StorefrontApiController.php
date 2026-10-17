@@ -66,6 +66,36 @@ class StorefrontApiController extends Controller
         ]);
     }
 
+    /** Checkout: check a coupon and return the new totals (the order itself is re-checked on the server). */
+    public function checkCoupon(Request $request, \App\Services\CouponService $coupons, \App\Services\CheckoutService $checkout, \App\Services\RewardService $rewards): JsonResponse
+    {
+        $code = trim((string) $request->input('code', ''));
+        $items = $this->cartService->getItems();
+        $subtotal = (float) $items->sum(fn (array $item) => $item['line_total']);
+
+        if ($code === '' || $items->isEmpty()) {
+            return response()->json(['ok' => false, 'message' => 'কুপন কোড লিখুন।'], 422);
+        }
+
+        try {
+            $result = $coupons->validate($code, $subtotal);
+        } catch (ValidationException $e) {
+            return response()->json(['ok' => false, 'message' => collect($e->errors())->flatten()->first()], 422);
+        }
+
+        $discount = (float) $result['discount'];
+        $redeemable = $rewards->redeemablePoints(Auth::user(), max(0, $subtotal - $discount));
+
+        return response()->json([
+            'ok' => true,
+            'code' => $result['coupon']->code,
+            'discount' => $discount,
+            'reward_points' => $redeemable,
+            'reward_discount' => $rewards->discountFor($redeemable),
+            'message' => 'কুপন প্রয়োগ হয়েছে: ' . money_bd($discount) . ' ছাড়',
+        ]);
+    }
+
     public function checkPhone(Request $request): JsonResponse
     {
         $phone = User::normalizePhone($request->string('phone')->toString());
@@ -121,7 +151,7 @@ class StorefrontApiController extends Controller
                 'redirect_checkout' => $result['redirect_checkout'],
                 'product' => [
                     'name' => $product->name,
-                    'image' => media_url($product->primaryImage()),
+                    'image' => media_thumb($product->primaryImage(), 300),
                     'price' => $added['unit_price'] ?? money_bd($product->displayPrice()),
                     'option_summary' => $added['option_summary'] ?? null,
                     'url' => route('product.show', $product->slug),
@@ -188,7 +218,7 @@ class StorefrontApiController extends Controller
                 'unit_price' => money_bd($item['unit_price']),
                 'unit_price_raw' => (float) $item['unit_price'],
                 'line_total' => money_bd($item['line_total']),
-                'image' => media_url($item['product']->primaryImage()),
+                'image' => media_thumb($item['product']->primaryImage(), 300),
                 'url' => route('product.show', $item['product']->slug),
             ])->values(),
         ];

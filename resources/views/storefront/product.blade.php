@@ -22,7 +22,7 @@
         'backorder' => __('messages.backorder'),
     ];
     $galleryImages = $product->images->isNotEmpty() ? $product->images : collect([(object)['image' => $product->primaryImage(), 'alt_text' => $product->name]]);
-    $galleryUrls = $galleryImages->map(fn ($img) => media_url($img->image))->values();
+    $galleryUrls = $galleryImages->map(fn ($img) => media_thumb($img->image, 1000))->values();
     $optionGroups = ProductOptionGroups::storefrontGroups($product->options);
 
     $defaultOptionIds = $optionGroups
@@ -753,7 +753,7 @@
     <div class="pd-top">
         <div class="pd-gallery" id="pd-gallery">
             <div class="pd-gallery-stage" id="pd-gallery-stage">
-                <img class="pd-gallery-main" id="pd-gallery-main" src="{{ media_url($galleryImages->first()->image) }}" alt="{{ $product->name }}">
+                <img class="pd-gallery-main" id="pd-gallery-main" src="{{ media_thumb($galleryImages->first()->image, 1000) }}" fetchpriority="high" alt="{{ $product->name }}">
                 @if($galleryImages->count() > 1)
                     <div class="pd-gallery-dots" id="pd-gallery-dots" aria-hidden="true">
                         @foreach($galleryImages as $index => $image)
@@ -767,7 +767,8 @@
                     @foreach($galleryImages as $index => $image)
                         <img
                             class="pd-gallery-thumb @if($index === 0) active @endif"
-                            src="{{ media_url($image->image) }}"
+                            src="{{ media_thumb($image->image, 300) }}"
+                            loading="lazy"
                             alt="{{ $image->alt_text ?? $product->name }}"
                             data-index="{{ $index }}"
                         >

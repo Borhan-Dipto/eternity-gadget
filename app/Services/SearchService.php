@@ -108,7 +108,7 @@ class SearchService
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'price' => $product->displayPrice(),
-                'image' => media_url($product->primaryImage()),
+                'image' => media_thumb($product->primaryImage(), 300),
                 'url' => route('product.show', $product->slug),
             ]);
     }

@@ -1,21 +1,21 @@
 {
     "name": "Eternity Gadget",
-    "short_name": "EternityGadget",
-    "description": "Premium gadgets and accessories in Dhaka, Bangladesh",
+    "short_name": "Eternity Gadget",
+    "description": "প্রিমিয়াম ফোন কেস, চার্জার ও গ্যাজেট — ঢাকা, বাংলাদেশ",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#83B735",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "/storage/branding/eternity-logo.png",
+            "src": "/brand-icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/storage/branding/eternity-logo.png",
+            "src": "/brand-icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

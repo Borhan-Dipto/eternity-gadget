@@ -55,6 +55,31 @@ class ShopSettings extends Page
 
     public ?array $data = [];
 
+    protected function getHeaderActions(): array
+    {
+        $external = \App\Support\ImageLocalizer::status()['external'];
+
+        return [
+            Action::make('copyImages')
+                ->label("Copy {$external} outside photo(s) to this server")
+                ->icon(Heroicon::OutlinedPhoto)
+                ->color('warning')
+                ->visible($external > 0)
+                ->requiresConfirmation()
+                ->modalDescription('Some product/category photos are still loaded from the old store\'s server. This downloads them here so they never disappear. It can take a minute.')
+                ->action(function (): void {
+                    $result = \App\Support\ImageLocalizer::run();
+                    $note = Notification::make()->title("Copied {$result['copied']} photo(s)");
+                    if ($result['failed']) {
+                        $note->warning()->body('Could not download these (please upload new photos): ' . implode(', ', array_slice($result['failed'], 0, 12)))->persistent();
+                    } else {
+                        $note->success();
+                    }
+                    $note->send();
+                }),
+        ];
+    }
+
     public function mount(): void
     {
         $values = SiteSetting::query()->whereIn('key', array_keys(self::FIELDS))->pluck('value', 'key');

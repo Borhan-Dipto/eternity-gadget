@@ -34,7 +34,9 @@
     @yield('og_extra')
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="icon" href="{{ media_url(setting('favicon')) }}">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand-icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <link rel="manifest" href="{{ asset('manifest.json') }}">
 
@@ -68,7 +70,7 @@
         }
     </style>
 
-    <link rel="stylesheet" href="{{ asset('catalog/view/javascript/xboost/digital_one/e0619659da23d9f95c81c72e70bf087e.css') }}">
+    <link rel="stylesheet" href="{{ asset('catalog/view/javascript/xboost/digital_one/e0619659da23d9f95c81c72e70bf087e.css') }}?v={{ @filemtime(public_path('catalog/view/javascript/xboost/digital_one/e0619659da23d9f95c81c72e70bf087e.css')) }}">
 
     <script type="application/ld+json">
 
@@ -1530,7 +1532,7 @@
 
         <div class="ig-logo">
 
-            <a href="{{ route('home') }}"><img src="{{ media_url(setting('logo')) }}" alt="{{ setting('site_name', 'Eternity Gadget') }}"></a>
+            <a href="{{ route('home') }}"><img src="{{ media_thumb(setting('logo'), 300) }}" alt="{{ setting('site_name', 'Eternity Gadget') }}" width="150" height="70"></a>
 
         </div>
 
@@ -1796,7 +1798,7 @@
 
             <div class="col-md-4">
 
-                <img src="{{ media_url(setting('footer_logo', setting('logo'))) }}" alt="{{ setting('site_name') }}" style="max-width: 180px; margin-bottom: 16px;">
+                <img src="{{ media_thumb(setting('footer_logo') ?: setting('logo'), 300) }}" alt="{{ setting('site_name') }}" loading="lazy" style="max-width: 180px; height: auto; margin-bottom: 16px;">
 
                 <p class="footer-about">{{ setting('footer_about', 'Welcome to our online store! We are a team of passionate individuals who are dedicated to providing our customers with high-quality products and excellent service.') }}</p>
                 <div class="footer-contact">
@@ -2029,10 +2031,12 @@
 
 (function () {
 
+    // Remove the old service worker and its cache (it served outdated CSS/JS to returning visitors)
     if ('serviceWorker' in navigator) {
-
-        window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-
+        navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister())).catch(() => {});
+    }
+    if (window.caches && caches.keys) {
+        caches.keys().then((keys) => keys.filter((k) => k.indexOf('ig-store') === 0).forEach((k) => caches.delete(k))).catch(() => {});
     }
 
 

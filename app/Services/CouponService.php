@@ -23,7 +23,7 @@ class CouponService
 
         if ($coupon->min_order !== null && $subtotal < (float) $coupon->min_order) {
             throw ValidationException::withMessages([
-                'coupon' => 'Minimum order amount for this coupon is ' . money_bd($coupon->min_order) . '.',
+                'coupon' => 'এই কুপন ব্যবহার করতে কমপক্ষে ' . money_bd($coupon->min_order) . ' এর প্রোডাক্ট নিতে হবে।',
             ]);
         }
 
@@ -40,7 +40,7 @@ class CouponService
     public function apply(Coupon $coupon, float $subtotal): float
     {
         if ($coupon->type === Coupon::TYPE_PERCENT) {
-            return round($subtotal * ((float) $coupon->value / 100), 2);
+            return round($subtotal * ((float) $coupon->value / 100));
         }
 
         return min((float) $coupon->value, $subtotal);

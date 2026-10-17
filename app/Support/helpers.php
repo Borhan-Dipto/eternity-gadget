@@ -50,6 +50,14 @@ if (! function_exists('whatsapp_link')) {
     }
 }
 
+if (! function_exists('media_thumb')) {
+    /** Small WebP copy of an uploaded photo for cards/lists (falls back to the original). */
+    function media_thumb(?string $path, int $width = 600): string
+    {
+        return \App\Support\Thumbnail::url($path, $width);
+    }
+}
+
 if (! function_exists('money_bd')) {
     function money_bd(float|int|string|null $amount): string
     {

@@ -39,7 +39,11 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        $this->ensureMediaStorageReady();
+        // Folder/symlink check: once every 6 hours instead of on every single request
+        if (! Cache::has('media_storage_ready')) {
+            $this->ensureMediaStorageReady();
+            Cache::put('media_storage_ready', true, now()->addHours(6));
+        }
 
         Product::observe(ProductObserver::class);
 
