@@ -1,0 +1,333 @@
+/* ==========================================================================
+   Eternity Gadget — "Liquid Glass" layer (iOS 26 style) on top of the theme.
+   Active when <html class="lg">. Heavy blur only on floating parts (header,
+   bottom bar, drawers, popups); cards use cheap translucency so older phones
+   stay smooth. Browsers without backdrop-filter get solid white panels.
+   ========================================================================== */
+
+html.lg {
+    --lg-tint: rgba(255, 255, 255, 0.56);
+    --lg-tint-strong: rgba(255, 255, 255, 0.78);
+    --lg-card: rgba(255, 255, 255, 0.72);
+    --lg-rim: rgba(255, 255, 255, 0.75);
+    --lg-edge: rgba(15, 23, 42, 0.07);
+    --lg-blur: blur(22px) saturate(190%);
+    --lg-blur-soft: blur(14px) saturate(170%);
+    --lg-inner: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    --lg-shadow: 0 10px 34px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.06);
+    --lg-shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(15, 23, 42, 0.05);
+    --lg-radius: 22px;
+    --lg-gap: 10px;
+}
+
+/* --- Ambient background so the glass has something to refract ----------- */
+html.lg body {
+    background:
+        radial-gradient(900px 520px at -8% -6%, rgba(241, 89, 42, 0.10), transparent 60%),
+        radial-gradient(760px 520px at 108% 8%, rgba(56, 119, 255, 0.08), transparent 60%),
+        radial-gradient(900px 640px at 50% 112%, rgba(241, 89, 42, 0.06), transparent 60%),
+        #f6f7f9 !important;
+    background-attachment: fixed !important;
+}
+
+/* Shared glass surface ---------------------------------------------------- */
+html.lg .ig-header,
+html.lg .mobile-bottom-nav,
+html.lg .pd-sticky,
+html.lg .cart-toast,
+html.lg .search-panel,
+html.lg .chat-trigger-btn,
+html.lg .floating-cart-widget {
+    background: var(--lg-tint) !important;
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border: 1px solid var(--lg-rim) !important;
+    box-shadow: var(--lg-inner), var(--lg-shadow) !important;
+}
+
+/* Specular sheen: the bright curved highlight of liquid glass */
+html.lg .ig-header::before,
+html.lg .mobile-bottom-nav::before,
+html.lg .pd-sticky::before,
+html.lg .cart-toast::before,
+html.lg .chat-trigger-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.10) 38%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(120% 140% at 0% 0%, rgba(255, 255, 255, 0.35), transparent 45%);
+    mix-blend-mode: soft-light;
+}
+
+/* --- Header: floating glass capsule ------------------------------------- */
+html.lg .ig-header {
+    top: var(--lg-gap);
+    left: 16px;
+    right: 16px;
+    max-width: 1320px;
+    margin: 0 auto;
+    border-radius: var(--lg-radius);
+    overflow: visible;
+}
+html.lg .ig-header.is-hidden { transform: translateY(calc(-100% - 24px)); }
+html.lg .ig-header-inner { position: relative; z-index: 1; }
+html.lg body.has-fixed-header { padding-top: calc(var(--header-height, 84px) + 22px) !important; }
+html.lg .search-panel {
+    top: calc(100% + 8px);
+    border-radius: 18px;
+}
+@media (max-width: 991px) {
+    html.lg .ig-header { left: 10px; right: 10px; border-radius: 20px; }
+    html.lg body.has-fixed-header { padding-top: 84px !important; }
+}
+@media (max-width: 767px) {
+    html.lg .search-panel.open {
+        position: fixed;
+        top: calc(var(--header-height, 64px) + 18px);
+        left: 10px;
+        right: 10px;
+    }
+}
+
+/* Dropdown menus: frosted plates */
+html.lg .ig-menu .ig-submenu,
+html.lg .ig-menu .ig-flyout,
+html.lg .ig-menu-more-panel,
+html.lg .ig-mega,
+html.lg .account-dropdown-menu,
+html.lg .notification-dropdown,
+html.lg .search-autocomplete {
+    background: var(--lg-tint-strong) !important;
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border: 1px solid var(--lg-rim) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--lg-inner), var(--lg-shadow) !important;
+}
+html.lg .ig-menu .ig-submenu a:hover,
+html.lg .ig-mega-col a:hover,
+html.lg .ig-menu-more-panel > li > a:hover { background: rgba(241, 89, 42, 0.08) !important; border-radius: 10px; }
+
+/* --- Mobile bottom bar: floating capsule with a glass "lens" on the active tab --- */
+@media (max-width: 767px) {
+    html.lg .mobile-bottom-nav {
+        left: 12px;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        border-radius: 26px;
+        padding: 4px 4px;
+        overflow: hidden;
+    }
+    html.lg .mobile-bottom-nav-inner { position: relative; z-index: 1; }
+    html.lg .mobile-nav-item { border-radius: 20px; transition: background .2s ease; }
+    html.lg .mobile-nav-item.active {
+        background: rgba(241, 89, 42, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(241, 89, 42, 0.12);
+    }
+    html.lg body { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important; }
+    html.lg footer { margin-bottom: 0 !important; }
+    html.lg .chat-widget { bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important; }
+
+    /* Sticky order bar floats just above the bottom bar */
+    html.lg .pd-sticky {
+        left: 12px;
+        right: 12px;
+        bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+        border-radius: 22px;
+        padding: 8px 8px 8px 14px;
+        transform: translateY(calc(100% + 120px));
+    }
+    html.lg .pd-sticky.is-visible { transform: translateY(0); }
+    html.lg .pd-sticky > * { position: relative; z-index: 1; }
+    html.lg body.page-product { padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px)) !important; }
+    html.lg .cart-toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* --- Chat button: clear glass bubble with brand icon --------------------- */
+html.lg .chat-trigger-btn { position: relative; }
+html.lg .chat-trigger-btn svg { fill: var(--brand, #F1592A) !important; position: relative; z-index: 1; }
+html.lg .chat-popup-link { box-shadow: var(--lg-inner), var(--lg-shadow-sm); }
+
+/* --- Drawers & popups ----------------------------------------------------- */
+html.lg .cart-sidebar,
+html.lg .mobile-nav-drawer {
+    background: rgba(255, 255, 255, 0.82) !important;
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    box-shadow: var(--lg-inner), 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+html.lg .cart-sidebar { border-radius: 26px 0 0 26px; }
+html.lg .mobile-nav-drawer { border-radius: 0 26px 26px 0; }
+html.lg .cart-sidebar-overlay,
+html.lg .mobile-nav-overlay {
+    background: rgba(15, 23, 42, 0.28) !important;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+html.lg .cs-item { background: rgba(255, 255, 255, 0.7) !important; border: 1px solid var(--lg-rim); border-radius: 16px; box-shadow: var(--lg-shadow-sm); }
+html.lg .cart-toast { border-radius: 22px; overflow: hidden; }
+html.lg .cart-toast > * { position: relative; z-index: 1; }
+html.lg .cart-toast-row img { border-radius: 12px; }
+html.lg .floating-cart-widget { border-radius: 16px 0 0 16px; overflow: hidden; }
+
+/* --- Buttons: liquid "pill" with light caught on the top edge ------------- */
+html.lg .pd-btn-order,
+html.lg .btn-order-now,
+html.lg .co-btn-submit,
+html.lg .cs-btn-checkout,
+html.lg .cart-toast-btn-checkout,
+html.lg .oc-btn-primary,
+html.lg .order-btn:not(.order-btn-secondary):not(.order-btn-wa):not(.order-btn-danger),
+html.lg .pd-sticky-btn,
+html.lg .mini-cart-btn-checkout {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 48%, rgba(0, 0, 0, 0.04) 100%),
+        var(--brand, #F1592A) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 6px rgba(0, 0, 0, 0.10), 0 8px 20px rgba(241, 89, 42, 0.28) !important;
+    transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+html.lg .pd-btn-order:hover,
+html.lg .btn-order-now:hover,
+html.lg .co-btn-submit:hover,
+html.lg .cs-btn-checkout:hover,
+html.lg .oc-btn-primary:hover,
+html.lg .pd-sticky-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+html.lg .pd-btn-order:active,
+html.lg .btn-order-now:active,
+html.lg .co-btn-submit:active,
+html.lg .pd-sticky-btn:active { transform: scale(0.98); }
+
+/* Secondary buttons: clear glass */
+html.lg .pd-btn-cart,
+html.lg .cs-btn-view,
+html.lg .cart-toast-btn-view,
+html.lg .order-btn-secondary,
+html.lg .oc-btn-secondary,
+html.lg .account-btn,
+html.lg .cat-filter-btn {
+    background: rgba(255, 255, 255, 0.62) !important;
+    color: #111 !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+}
+html.lg .pd-btn-whatsapp,
+html.lg .order-btn-wa,
+html.lg .pd-sticky-wa {
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 18px rgba(37, 211, 102, 0.25) !important;
+}
+
+/* --- Cards & panels: translucent plates (no blur = fast) ---------------- */
+html.lg .product-card,
+html.lg .co-order-box,
+html.lg .od-card,
+html.lg .oc-card,
+html.lg .account-box,
+html.lg .account-sidebar,
+html.lg .account-section-body,
+html.lg .pd-trust,
+html.lg .rp-how div,
+html.lg .co-radio-list,
+html.lg .category-card,
+html.lg .cat-sidebar {
+    background: var(--lg-card) !important;
+    border: 1px solid var(--lg-rim) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--lg-inner), var(--lg-shadow-sm) !important;
+    overflow: hidden;
+}
+html.lg .product-card { transition: transform .2s ease, box-shadow .2s ease; }
+html.lg .product-card:hover { transform: translateY(-3px); box-shadow: var(--lg-inner), var(--lg-shadow) !important; }
+html.lg .product-card img { border-radius: 14px; }
+html.lg .account-section-header { background: transparent !important; border: 0 !important; font-weight: 600; padding-left: 4px; }
+html.lg .account-tile { border-color: rgba(15, 23, 42, 0.06) !important; }
+html.lg .co-radio-option { background: transparent !important; }
+
+/* Inputs: soft glass fields */
+html.lg .co-input-wrap,
+html.lg .ig-phone-field,
+html.lg .account-field input,
+html.lg .account-field textarea,
+html.lg .login-input,
+html.lg .reg-input,
+html.lg .form-control {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-radius: 14px !important;
+    border-color: rgba(15, 23, 42, 0.10) !important;
+}
+html.lg .co-input-wrap { overflow: hidden; }
+
+/* Footer: one big frosted plate */
+html.lg footer {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-top: 1px solid var(--lg-rim) !important;
+    border-radius: 28px 28px 0 0;
+    box-shadow: var(--lg-inner), 0 -10px 30px rgba(15, 23, 42, 0.05);
+}
+
+/* --- Fallbacks ------------------------------------------------------------ */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    html.lg .ig-header, html.lg .mobile-bottom-nav, html.lg .pd-sticky, html.lg .cart-toast,
+    html.lg .search-panel, html.lg .cart-sidebar, html.lg .mobile-nav-drawer, html.lg .chat-trigger-btn,
+    html.lg .ig-menu .ig-submenu, html.lg .ig-menu-more-panel, html.lg .ig-mega, html.lg .account-dropdown-menu {
+        background: rgba(255, 255, 255, 0.97) !important;
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    html.lg .ig-header, html.lg .mobile-bottom-nav, html.lg .pd-sticky, html.lg .cart-toast,
+    html.lg .search-panel, html.lg .cart-sidebar, html.lg .mobile-nav-drawer {
+        background: #fff !important;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    html.lg .product-card, html.lg .pd-btn-order, html.lg .co-btn-submit { transition: none; }
+}
+
+/* --- Product page: rounded glass gallery, options and panels ------------- */
+html.lg .pd-gallery-stage {
+    border-radius: 22px !important;
+    overflow: hidden;
+    background: var(--lg-card) !important;
+    border: 1px solid var(--lg-rim) !important;
+    box-shadow: var(--lg-inner), var(--lg-shadow-sm);
+}
+html.lg .pd-gallery-thumb { border-radius: 12px !important; }
+html.lg .pd-tab-panel {
+    background: var(--lg-card) !important;
+    border: 1px solid var(--lg-rim) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--lg-inner), var(--lg-shadow-sm);
+}
+html.lg .pd-option-pill span {
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.7);
+}
+html.lg .pd-option-pill input:checked + span {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 2px var(--brand, #F1592A) !important;
+}
+html.lg .pd-qty-control { border-radius: 14px; overflow: hidden; background: rgba(255, 255, 255, 0.75); }
+html.lg .pd-save-badge, html.lg .badge-sale { border-radius: 999px !important; }
+html.lg .pd-reward-note { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9); border: 1px solid rgba(241, 89, 42, 0.15); }
+/* Empty phone-check message must not leave a gap in the checkout form */
+#phone-feedback:empty { display: none !important; }
+
+/* Bars that sit over text: denser glass so labels stay readable */
+html.lg .mobile-bottom-nav,
+html.lg .pd-sticky {
+    background: rgba(255, 255, 255, 0.74) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    backdrop-filter: blur(28px) saturate(200%);
+}
+/* Cart drawer footer: glass instead of a white slab */
+html.lg .cs-footer { background: rgba(255, 255, 255, 0.55) !important; border-top: 1px solid var(--lg-rim) !important; }
+html.lg .cs-header { background: transparent !important; }
+html.lg .cs-item-qty, html.lg .cs-qty { border-radius: 12px; overflow: hidden; }

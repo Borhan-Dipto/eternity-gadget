@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="{{ app()->getLocale() }}">
+<html lang="{{ app()->getLocale() }}" class="lg">
 
 <head>
 
@@ -923,7 +923,7 @@
 
         .product-card-image-wrap { position: relative; margin-bottom: 10px; flex-shrink: 0; }
 
-        .product-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; object-position: center; background: #f8f8f8; display: block; }
+        .product-card img { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; object-position: center; background: #f8f8f8; display: block; }
 
         .product-card-title {
             font-size: 15px;
@@ -1519,6 +1519,9 @@
         }
 
     </style>
+
+    {{-- iOS 26 "Liquid Glass" look (loaded last so it sits on top of the theme) --}}
+    <link rel="stylesheet" href="{{ asset('css/liquid-glass.css') }}?v={{ @filemtime(public_path('css/liquid-glass.css')) }}">
 
     @include('storefront.partials.meta-pixel')
 

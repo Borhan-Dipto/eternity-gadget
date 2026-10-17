@@ -391,6 +391,7 @@
     }
 
     function openCartSidebar() {
+        window.hideCartToast?.(); // never show the "added" popup on top of the open cart
         overlay?.classList.add('open');
         sidebar?.classList.add('open');
         document.body.classList.add('cart-sidebar-open');
