@@ -21,7 +21,7 @@ class AbandonedCartMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'You left items in your cart',
+            subject: 'আপনার কার্টে প্রোডাক্ট রয়ে গেছে',
         );
     }
 
@@ -30,8 +30,8 @@ class AbandonedCartMail extends Mailable
         $itemCount = count($this->abandonedCart->cart_snapshot ?? []);
 
         return new Content(
-            htmlString: '<p>You still have ' . $itemCount . ' item(s) waiting in your cart.</p>'
-                . '<p><a href="' . url('/cart') . '">Return to your cart</a> to complete checkout.</p>',
+            htmlString: '<p>আপনার কার্টে এখনো ' . $itemCount . 'টি প্রোডাক্ট অপেক্ষা করছে।</p>'
+                . '<p><a href="' . url('/checkout') . '">এখানে ক্লিক করে</a> অর্ডারটি সম্পন্ন করুন।</p>',
         );
     }
 }

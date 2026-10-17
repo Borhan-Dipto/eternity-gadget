@@ -42,7 +42,7 @@ class CartService
 
         $options = $this->resolveSelectedOptions($product, $optionIds);
         if ($options === false) {
-            throw ValidationException::withMessages(['option_id' => 'Please select all required product options.']);
+            throw ValidationException::withMessages(['option_id' => 'অনুগ্রহ করে প্রোডাক্টের সব অপশন (যেমন মডেল/রং) বেছে নিন।']);
         }
 
         $primaryOption = $product->pricingOptionForSelection($options);
@@ -52,7 +52,7 @@ class CartService
         $newQuantity = ($cart[$cartKey] ?? 0) + $quantity;
 
         if ($newQuantity > $product->availableStock($primaryOption)) {
-            throw ValidationException::withMessages(['quantity' => 'Not enough stock available.']);
+            throw ValidationException::withMessages(['quantity' => 'এই পরিমাণ স্টকে নেই।']);
         }
 
         $cart[$cartKey] = $newQuantity;

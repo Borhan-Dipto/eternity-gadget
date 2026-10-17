@@ -95,8 +95,8 @@
         </div>
     </div>
     <div class="cart-toast-actions">
-        <button type="button" class="cart-toast-btn cart-toast-btn-view" id="cart-toast-view">View Cart</button>
-        <a href="{{ route('checkout') }}" class="cart-toast-btn cart-toast-btn-checkout" id="cart-toast-checkout">Checkout</a>
+        <button type="button" class="cart-toast-btn cart-toast-btn-view" id="cart-toast-view">কার্ট দেখুন</button>
+        <a href="{{ route('checkout') }}" class="cart-toast-btn cart-toast-btn-checkout" id="cart-toast-checkout">অর্ডার করুন</a>
     </div>
 </div>
 
@@ -110,7 +110,7 @@
         if (!toast || !product) return;
         document.getElementById('cart-toast-img').src = product.image || '';
         document.getElementById('cart-toast-name').textContent = product.name || '';
-        document.getElementById('cart-toast-meta').textContent = product.option_summary || 'Added to your cart';
+        document.getElementById('cart-toast-meta').textContent = product.option_summary || 'কার্টে যোগ হয়েছে ✓';
         document.getElementById('cart-toast-price').textContent = product.price || '';
 
         toast.classList.add('show');
@@ -162,7 +162,7 @@
             const data = await res.json();
 
             if (!res.ok || !data.success) {
-                alert(data.message || 'Could not add to cart. Please select all options.');
+                alert(data.message || 'কার্টে যোগ করা যায়নি। প্রোডাক্টের সব অপশন বেছে নিন।');
                 return;
             }
 

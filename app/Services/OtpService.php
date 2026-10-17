@@ -18,7 +18,7 @@ class OtpService
         $normalized = $this->normalizePhone($phone);
 
         if (! $normalized) {
-            throw ValidationException::withMessages(['phone' => 'Please enter a valid phone number.']);
+            throw ValidationException::withMessages(['phone' => 'সঠিক মোবাইল নম্বর লিখুন।']);
         }
 
         OtpVerification::query()
@@ -59,7 +59,7 @@ class OtpService
         $normalized = $this->normalizePhone($phone);
 
         if (! $normalized) {
-            throw ValidationException::withMessages(['phone' => 'Please enter a valid phone number.']);
+            throw ValidationException::withMessages(['phone' => 'সঠিক মোবাইল নম্বর লিখুন।']);
         }
 
         $otp = OtpVerification::query()
@@ -70,15 +70,15 @@ class OtpService
             ->first();
 
         if (! $otp) {
-            throw ValidationException::withMessages(['code' => 'No verification code found for this phone number.']);
+            throw ValidationException::withMessages(['code' => 'এই নম্বরে কোনো কোড পাঠানো হয়নি।']);
         }
 
         if ($otp->isExpired()) {
-            throw ValidationException::withMessages(['code' => 'This verification code has expired.']);
+            throw ValidationException::withMessages(['code' => 'কোডের মেয়াদ শেষ, নতুন কোড নিন।']);
         }
 
         if (! hash_equals($otp->code, trim($code))) {
-            throw ValidationException::withMessages(['code' => 'The verification code is incorrect.']);
+            throw ValidationException::withMessages(['code' => 'কোডটি ভুল হয়েছে।']);
         }
 
         $otp->update(['verified_at' => now()]);

@@ -317,12 +317,12 @@
 </style>
 
 <div class="account-box reg-page">
-    <h1>Register Account</h1>
-    <p class="reg-lead">If you already have an account with us, please login at the <a href="{{ route('account.login') }}">login page</a>.</p>
+    <h1>নতুন অ্যাকাউন্ট খুলুন</h1>
+    <p class="reg-lead">আগে থেকেই অ্যাকাউন্ট থাকলে <a href="{{ route('account.login') }}">এখানে লগইন করুন</a>।</p>
 
     @if($errors->any())
         <div class="reg-field-error" style="margin-bottom:20px;grid-column:auto;">
-            Please fix the highlighted fields below.
+            লাল চিহ্নিত ঘরগুলো ঠিক করুন।
         </div>
     @endif
 
@@ -330,24 +330,24 @@
         @csrf
 
         <section class="reg-section">
-            <h2 class="reg-section-title">Your Personal Details</h2>
+            <h2 class="reg-section-title">আপনার তথ্য</h2>
             <div class="reg-grid reg-grid--2">
                 <div class="reg-field">
-                    <label for="first_name"><span class="req">*</span> First Name</label>
-                    <input type="text" id="first_name" name="first_name" class="reg-input" value="{{ old('first_name') }}" placeholder="First Name" required autocomplete="given-name">
+                    <label for="first_name"><span class="req">*</span> নামের প্রথম অংশ</label>
+                    <input type="text" id="first_name" name="first_name" class="reg-input" value="{{ old('first_name') }}" placeholder="যেমন: রহিম" required autocomplete="given-name">
                 </div>
                 <div class="reg-field">
-                    <label for="last_name"><span class="req">*</span> Last Name</label>
-                    <input type="text" id="last_name" name="last_name" class="reg-input" value="{{ old('last_name') }}" placeholder="Last Name" required autocomplete="family-name">
+                    <label for="last_name"><span class="req">*</span> নামের শেষ অংশ</label>
+                    <input type="text" id="last_name" name="last_name" class="reg-input" value="{{ old('last_name') }}" placeholder="যেমন: উদ্দিন" required autocomplete="family-name">
                 </div>
                 <div class="reg-field">
-                    <label for="email"><span class="req">*</span> E-Mail</label>
-                    <input type="email" id="email" name="email" class="reg-input" value="{{ old('email') }}" placeholder="E-Mail" required autocomplete="email">
+                    <label for="email"><span class="req">*</span> ইমেইল</label>
+                    <input type="email" id="email" name="email" class="reg-input" value="{{ old('email') }}" placeholder="আপনার ইমেইল" required autocomplete="email">
                 </div>
                 @include('storefront.partials.phone-input', [
                     'name' => 'phone',
                     'value' => old('phone'),
-                    'label' => 'Mobile',
+                    'label' => 'মোবাইল নম্বর',
                     'variant' => 'register',
                     'placeholder' => '1XXXXXXXXX',
                 ])
@@ -355,40 +355,40 @@
         </section>
 
         <section class="reg-section">
-            <h2 class="reg-section-title">Your Password</h2>
+            <h2 class="reg-section-title">পাসওয়ার্ড</h2>
             <div class="reg-grid reg-grid--2">
                 <div class="reg-field">
-                    <label for="password"><span class="req">*</span> Password</label>
-                    <input type="password" id="password" name="password" class="reg-input" placeholder="Password" required autocomplete="new-password">
+                    <label for="password"><span class="req">*</span> পাসওয়ার্ড</label>
+                    <input type="password" id="password" name="password" class="reg-input" placeholder="পাসওয়ার্ড" required autocomplete="new-password">
                 </div>
                 <div class="reg-field">
-                    <label for="password_confirmation"><span class="req">*</span> Password Confirm</label>
-                    <input type="password" id="password_confirmation" name="password_confirmation" class="reg-input" placeholder="Password Confirm" required autocomplete="new-password">
+                    <label for="password_confirmation"><span class="req">*</span> পাসওয়ার্ড আবার লিখুন</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="reg-input" placeholder="পাসওয়ার্ড আবার লিখুন" required autocomplete="new-password">
                 </div>
             </div>
         </section>
 
         <section class="reg-section">
-            <h2 class="reg-section-title">Newsletter</h2>
+            <h2 class="reg-section-title">অফার ও আপডেট</h2>
             <div class="reg-field reg-field--radio">
-                <label>Subscribe</label>
+                <label>ইমেইলে অফার পেতে চান?</label>
                 <div class="reg-radio-group">
                     <label>
                         <input type="radio" name="marketing_opt_in" value="1" {{ old('marketing_opt_in') == '1' ? 'checked' : '' }}>
-                        Yes
+                        হ্যাঁ
                     </label>
                     <label>
                         <input type="radio" name="marketing_opt_in" value="0" {{ old('marketing_opt_in', '0') == '0' ? 'checked' : '' }}>
-                        No
+                        না
                     </label>
                 </div>
             </div>
         </section>
 
         <section class="reg-section">
-            <h2 class="reg-section-title">Captcha</h2>
+            <h2 class="reg-section-title">ক্যাপচা</h2>
             <div class="reg-field">
-                <label for="reg-captcha-input"><span class="req">*</span> Enter the code in the box below</label>
+                <label for="reg-captcha-input"><span class="req">*</span> ছবির কোডটি নিচের বক্সে লিখুন</label>
                 <div class="reg-captcha-wrap">
                     <input type="text" name="captcha" id="reg-captcha-input" class="reg-input" value="{{ old('captcha') }}" required autocomplete="off">
                     <img src="{{ route('captcha.register') }}?t={{ time() }}" alt="Captcha code" class="reg-captcha-img" id="reg-captcha-img" width="130" height="44" title="Click to refresh">
@@ -402,9 +402,9 @@
         <div class="reg-footer">
             <label class="reg-agree">
                 <input type="checkbox" name="agree" value="1" required {{ old('agree') ? 'checked' : '' }}>
-                <span>I have read and agree to the <a href="{{ url('/page/privacy-policy') }}">Privacy Policy</a></span>
+                <span>আমি <a href="{{ url('/page/privacy-policy') }}">প্রাইভেসি পলিসি</a> পড়েছি এবং রাজি আছি</span>
             </label>
-            <button class="reg-submit" type="submit">Continue</button>
+            <button class="reg-submit" type="submit">অ্যাকাউন্ট খুলুন</button>
         </div>
     </form>
 </div>

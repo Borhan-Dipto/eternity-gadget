@@ -762,12 +762,12 @@
             <div class="pd-price-row">
                 <span class="pd-price-current" id="pd-price-current">{{ money_bd($displayPrice) }}</span>
                 <span class="pd-price-old" id="pd-price-old" @if(!$hasSale || $savings <= 0) hidden @endif>{{ money_bd($comparePrice) }}</span>
-                <span class="pd-save-badge" id="pd-save-badge" @if(!$hasSale || $savings <= 0) hidden @endif>Save {{ money_bd($savings) }} ({{ $savingsPercent }}%)</span>
+                <span class="pd-save-badge" id="pd-save-badge" @if(!$hasSale || $savings <= 0) hidden @endif>{{ money_bd($savings) }} সাশ্রয় ({{ $savingsPercent }}%)</span>
             </div>
 
-            <p class="pd-meta"><strong>Product Code:</strong> {{ $product->sku ?: 'N/A' }}</p>
+            <p class="pd-meta"><strong>প্রোডাক্ট কোড:</strong> {{ $product->sku ?: 'N/A' }}</p>
             <p class="pd-meta">
-                <strong>Availability:</strong>
+                <strong>স্টক:</strong>
                 <span id="pd-availability-top" class="{{ $inStock ? 'pd-in-stock' : 'pd-out-stock' }}">{{ $stockLabels[$stockStatus] ?? $stockStatus }}</span>
             </p>
 
@@ -803,17 +803,17 @@
                     </div>
                 @endforeach
 
-                <p class="pd-meta">
-                    <strong>Stock Availability:</strong>
+                <p class="pd-meta" hidden>
+                    <strong>স্টক:</strong>
                     <span id="pd-availability-inline" class="{{ $inStock ? 'pd-in-stock' : 'pd-out-stock' }}">{{ $stockLabels[$stockStatus] ?? $stockStatus }}</span>
                 </p>
 
                 <div class="pd-qty-row">
-                    <span class="pd-qty-label">Qty</span>
+                    <span class="pd-qty-label">পরিমাণ</span>
                     <div class="pd-qty-control">
-                        <button type="button" class="pd-qty-btn" id="pd-qty-minus" aria-label="Decrease quantity">−</button>
+                        <button type="button" class="pd-qty-btn" id="pd-qty-minus" aria-label="কমান">−</button>
                         <input type="number" name="quantity" id="pd-qty" value="{{ old('quantity', 1) }}" min="1" @if($availableStock > 0) max="{{ $availableStock }}" @endif class="pd-qty-input" required>
-                        <button type="button" class="pd-qty-btn" id="pd-qty-plus" aria-label="Increase quantity">+</button>
+                        <button type="button" class="pd-qty-btn" id="pd-qty-plus" aria-label="বাড়ান">+</button>
                     </div>
                 </div>
 
@@ -833,7 +833,7 @@
                 <form action="{{ route('product.stock-alert', $product) }}" method="post" class="mt-3">
                     @csrf
                     <p class="pd-meta"><strong>{{ __('messages.stock_alert') }}</strong></p>
-                    <input type="email" name="email" class="form-control mb-2" placeholder="Email" value="{{ auth()->user()?->email }}" required>
+                    <input type="email" name="email" class="form-control mb-2" placeholder="আপনার ইমেইল" value="{{ auth()->user()?->email }}" required>
                     <button class="pd-btn-order" type="submit" style="max-width:280px;">{{ __('messages.stock_alert') }}</button>
                 </form>
             @endif
@@ -842,8 +842,8 @@
 
     <div class="pd-tabs-wrap" id="reviews">
         <div class="pd-tabs" role="tablist">
-            <button type="button" class="pd-tab @if(!$reviewsTabActive) active @endif" data-tab="description" role="tab">Description</button>
-            <button type="button" class="pd-tab @if($reviewsTabActive) active @endif" data-tab="reviews" role="tab">Reviews ({{ $reviewCount }})</button>
+            <button type="button" class="pd-tab @if(!$reviewsTabActive) active @endif" data-tab="description" role="tab">বিস্তারিত</button>
+            <button type="button" class="pd-tab @if($reviewsTabActive) active @endif" data-tab="reviews" role="tab">রিভিউ ({{ $reviewCount }})</button>
         </div>
 
         <div class="pd-tab-panel @if(!$reviewsTabActive) active @endif" id="pd-panel-description" role="tabpanel">
@@ -853,7 +853,7 @@
                 @elseif($product->short_description)
                     <p>{{ $product->short_description }}</p>
                 @else
-                    <p>No description available.</p>
+                    <p>এই প্রোডাক্টের বিস্তারিত তথ্য শীঘ্রই যোগ করা হবে।</p>
                 @endif
             </div>
             @if($product->video_url)
@@ -865,7 +865,7 @@
 
         <div class="pd-tab-panel @if($reviewsTabActive) active @endif" id="pd-panel-reviews" role="tabpanel">
             @if($reviews->isEmpty())
-                <p class="pd-reviews-empty">There are no reviews for this product.</p>
+                <p class="pd-reviews-empty">এখনো কোনো রিভিউ নেই। প্রথম রিভিউটি আপনিই লিখুন!</p>
             @else
                 @foreach($reviews as $review)
                     <div class="pd-review-item">
@@ -887,24 +887,24 @@
                 @csrf
                 <input type="hidden" name="review_form" value="1">
 
-                <h2 class="pd-review-form-title">Write a review</h2>
+                <h2 class="pd-review-form-title">রিভিউ লিখুন</h2>
 
                 <div class="pd-review-field">
-                    <label for="pd-review-name"><span class="req">*</span> Your Name</label>
+                    <label for="pd-review-name"><span class="req">*</span> আপনার নাম</label>
                     <input type="text" id="pd-review-name" name="name" value="{{ old('name', auth()->user()?->name) }}" required>
                     @error('name')<div class="pd-field-error">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="pd-review-field">
-                    <label for="pd-review-body"><span class="req">*</span> Your Review</label>
+                    <label for="pd-review-body"><span class="req">*</span> আপনার রিভিউ</label>
                     <textarea id="pd-review-body" name="body" required>{{ old('body') }}</textarea>
-                    <div class="pd-review-html-note">Note: HTML is not translated!</div>
+                    
                     @error('body')<div class="pd-field-error">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="pd-review-field">
-                    <label><span class="req">*</span> Rating</label>
-                    <div class="pd-stars" id="pd-stars" role="group" aria-label="Rating">
+                    <label><span class="req">*</span> রেটিং</label>
+                    <div class="pd-stars" id="pd-stars" role="group" aria-label="রেটিং">
                         @for($i = 1; $i <= 5; $i++)
                             <button type="button" class="pd-star" data-value="{{ $i }}" aria-label="{{ $i }} star{{ $i > 1 ? 's' : '' }}">☆</button>
                         @endfor
@@ -914,9 +914,9 @@
                 </div>
 
                 <div class="pd-review-field">
-                    <label>Image</label>
+                    <label>ছবি (ইচ্ছা হলে)</label>
                     <div class="pd-review-image-upload">
-                        <button type="button" class="pd-review-image-btn" id="pd-review-image-btn" aria-label="Upload image">+</button>
+                        <button type="button" class="pd-review-image-btn" id="pd-review-image-btn" aria-label="ছবি দিন">+</button>
                         <img class="pd-review-image-preview" id="pd-review-image-preview" alt="">
                         <input type="file" name="image" id="pd-review-image-input" accept="image/*" hidden>
                     </div>
@@ -924,17 +924,17 @@
                 </div>
 
                 <div class="pd-review-field">
-                    <label>Captcha</label>
+                    <label>ক্যাপচা</label>
                     <div class="pd-captcha-row">
-                        <span><span class="req">*</span> Enter the code in the box below</span>
+                        <span><span class="req">*</span> ছবির কোডটি নিচের বক্সে লিখুন</span>
                         <input type="text" name="captcha" id="pd-captcha-input" value="{{ old('captcha') }}" required autocomplete="off">
                     </div>
-                    <img src="{{ route('captcha.review') }}?t={{ time() }}" alt="Captcha code" class="pd-captcha-img" id="pd-captcha-img" width="130" height="44" title="Click to refresh">
+                    <img src="{{ route('captcha.review') }}?t={{ time() }}" alt="ক্যাপচা কোড" class="pd-captcha-img" id="pd-captcha-img" width="130" height="44" title="নতুন কোড পেতে ক্লিক করুন">
                     @error('captcha')<div class="pd-field-error">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="pd-review-submit-wrap">
-                    <button type="submit" class="pd-review-submit">Submit</button>
+                    <button type="submit" class="pd-review-submit">রিভিউ পাঠান</button>
                 </div>
             </form>
         </div>
@@ -961,7 +961,7 @@
 </div>
 
 <div class="pd-lightbox" id="pd-lightbox" aria-hidden="true">
-    <button type="button" class="pd-lightbox-close" aria-label="Close">&times;</button>
+    <button type="button" class="pd-lightbox-close" aria-label="বন্ধ করুন">&times;</button>
     <button type="button" class="pd-lightbox-prev" aria-label="Previous">&#8249;</button>
     <img id="pd-lightbox-img" src="" alt="">
     <button type="button" class="pd-lightbox-next" aria-label="Next">&#8250;</button>
@@ -1067,7 +1067,7 @@
                 priceOld.hidden = false;
             }
             if (saveBadge) {
-                saveBadge.textContent = 'Save ' + pricingOption.savings_formatted + ' (' + pricingOption.savings_percent + '%)';
+                saveBadge.textContent = pricingOption.savings_formatted + ' সাশ্রয় (' + pricingOption.savings_percent + '%)';
                 saveBadge.hidden = false;
             }
         } else {
@@ -1169,7 +1169,7 @@
     document.getElementById('pd-review-form')?.addEventListener('submit', (e) => {
         if (!ratingInput?.value || parseInt(ratingInput.value, 10) < 1) {
             e.preventDefault();
-            alert('Please select a rating.');
+            alert('অনুগ্রহ করে রেটিং (স্টার) দিন।');
         }
     });
 

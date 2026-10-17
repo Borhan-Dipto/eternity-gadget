@@ -52,7 +52,7 @@
         @foreach($sections as $section)
             <div class="section-title">
                 <h2>{{ $section->title }}</h2>
-                @if($section->view_more_url)<a href="{{ $section->view_more_url }}">View More</a>@endif
+                @if($section->view_more_url)<a href="{{ $section->view_more_url }}">সব দেখুন</a>@endif
             </div>
             @if($section->type === 'categories')
                 <div class="category-grid">

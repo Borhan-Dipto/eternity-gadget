@@ -12,7 +12,7 @@
             <form method="post" action="{{ route('cart.update') }}">
                 @csrf
                 <table class="table">
-                    <thead><tr><th>Product</th><th>Option</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr></thead>
+                    <thead><tr><th>প্রোডাক্ট</th><th>অপশন</th><th>পরিমাণ</th><th>দাম</th><th>মোট</th><th></th></tr></thead>
                     <tbody>
                     @foreach($cartItems as $item)
                         <tr>
@@ -22,7 +22,7 @@
                             <td>{{ money_bd($item['unit_price']) }}</td>
                             <td>{{ money_bd($item['line_total']) }}</td>
                             <td>
-                                <button form="remove-{{ md5($item['cart_key']) }}" class="btn btn-link" type="submit">Remove</button>
+                                <button form="remove-{{ md5($item['cart_key']) }}" class="btn btn-link" type="submit">সরান</button>
                                 <button form="save-{{ md5($item['cart_key']) }}" class="btn btn-link" type="submit">{{ __('messages.save_for_later') }}</button>
                             </td>
                         </tr>
@@ -30,7 +30,7 @@
                     </tbody>
                 </table>
                 <button class="ig-btn" type="submit">{{ __('messages.update_cart') }}</button>
-                <a class="ig-btn" href="{{ route('checkout') }}">{{ __('messages.checkout') }}</a>
+                <a class="ig-btn" href="{{ route('checkout') }}">{{ __('messages.order_now') }}</a>
             </form>
             @foreach($cartItems as $item)
                 <form id="remove-{{ md5($item['cart_key']) }}" method="post" action="{{ route('cart.remove') }}">
@@ -47,7 +47,7 @@
         @if($savedItems->isNotEmpty())
             <h2 class="mt-5">{{ __('messages.save_for_later') }}</h2>
             <table class="table">
-                <thead><tr><th>Product</th><th>Option</th><th>Qty</th><th>Price</th><th></th></tr></thead>
+                <thead><tr><th>প্রোডাক্ট</th><th>অপশন</th><th>পরিমাণ</th><th>দাম</th><th></th></tr></thead>
                 <tbody>
                 @foreach($savedItems as $item)
                     <tr>

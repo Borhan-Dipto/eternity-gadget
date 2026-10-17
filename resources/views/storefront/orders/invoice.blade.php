@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice {{ $order->order_number }}</title>
+    <meta name="robots" content="noindex">
+    <title>ইনভয়েস {{ $order->order_number }}</title>
     <style>
+        @font-face { font-family: 'Hind Siliguri'; font-weight: 400; font-display: swap; src: url('/fonts/site/hind-siliguri-bengali-400-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'Hind Siliguri'; font-weight: 700; font-display: swap; src: url('/fonts/site/hind-siliguri-bengali-700-normal.woff2') format('woff2'); }
         body { font-family: 'Hind Siliguri', Arial, sans-serif; color: #111; margin: 24px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -13,10 +16,10 @@
     </style>
 </head>
 <body>
-    <button class="no-print" onclick="window.print()">Print</button>
+    <button class="no-print" onclick="window.print()">প্রিন্ট / PDF সেভ</button>
     <h1>{{ setting('site_name', 'Eternity Gadget') }}</h1>
-    <h2>Invoice {{ $order->order_number }}</h2>
-    <p>Date: {{ $order->created_at->format('d M Y') }}</p>
+    <h2>ইনভয়েস #{{ $order->order_number }}</h2>
+    <p>তারিখ: {{ $order->created_at->timezone('Asia/Dhaka')->format('d M Y') }} &nbsp;|&nbsp; অবস্থা: {{ $order->statusLabelBn() }} &nbsp;|&nbsp; পেমেন্ট: {{ $order->paymentLabelBn() }}</p>
     <p>
         <strong>{{ $order->customer_name }}</strong><br>
         {{ $order->customer_email }}<br>
@@ -26,7 +29,7 @@
 
     <table>
         <thead>
-            <tr><th style="width:64px;">Image</th><th>Product</th><th>Options</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
+            <tr><th style="width:64px;">ছবি</th><th>প্রোডাক্ট</th><th>অপশন</th><th>পরিমাণ</th><th>দাম</th><th>মোট</th></tr>
         </thead>
         <tbody>
             @foreach($order->items as $item)
@@ -52,11 +55,11 @@
     </table>
 
     <div class="totals">
-        <p>Subtotal: {{ money_bd($order->subtotal) }}</p>
-        @if($order->discount > 0)<p>Discount: -{{ money_bd($order->discount) }}</p>@endif
-        <p>Shipping: {{ money_bd($order->shipping_cost) }}</p>
-        @if($order->tax_amount > 0)<p>Tax: {{ money_bd($order->tax_amount) }}</p>@endif
-        <p><strong>Total: {{ money_bd($order->total) }}</strong></p>
+        <p>সাবটোটাল: {{ money_bd($order->subtotal) }}</p>
+        @if($order->discount > 0)<p>ছাড়: -{{ money_bd($order->discount) }}</p>@endif
+        <p>ডেলিভারি চার্জ: {{ money_bd($order->shipping_cost) }}</p>
+        @if($order->tax_amount > 0)<p>ট্যাক্স: {{ money_bd($order->tax_amount) }}</p>@endif
+        <p><strong>মোট: {{ money_bd($order->total) }}</strong></p>
     </div>
 </body>
 </html>

@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <h1>Compare Products</h1>
     @if($products->isEmpty())
-        <p>No products to compare.</p>
+        <p>তুলনা করার জন্য কোনো প্রোডাক্ট নেই।</p>
     @else
         <table class="table">
             <thead>
@@ -19,19 +19,19 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Image</td>
+                    <td>ছবি</td>
                     @foreach($products as $product)
                         <td><img src="{{ media_url($product->primaryImage()) }}" alt="{{ $product->name }}" style="max-width:120px"></td>
                     @endforeach
                 </tr>
                 <tr>
-                    <td>Price</td>
+                    <td>দাম</td>
                     @foreach($products as $product)
                         <td>{{ money_bd($product->displayPrice()) }}</td>
                     @endforeach
                 </tr>
                 <tr>
-                    <td>Stock</td>
+                    <td>স্টক</td>
                     @foreach($products as $product)
                         <td>{{ $product->availableStock() }}</td>
                     @endforeach

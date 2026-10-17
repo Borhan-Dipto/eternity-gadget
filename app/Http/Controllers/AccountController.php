@@ -105,7 +105,7 @@ class AccountController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'প্রোফাইল আপডেট হয়েছে।');
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -116,7 +116,7 @@ class AccountController extends Controller
 
         Auth::user()->update(['password' => $data['password']]);
 
-        return back()->with('success', 'Password updated successfully.');
+        return back()->with('success', 'পাসওয়ার্ড পরিবর্তন হয়েছে।');
     }
 
     public function deleteAccount(Request $request): RedirectResponse
@@ -133,7 +133,7 @@ class AccountController extends Controller
         DB::table('sessions')->where('user_id', $userId)->delete();
         User::query()->whereKey($userId)->delete();
 
-        return redirect()->route('home')->with('success', 'Your account has been deleted.');
+        return redirect()->route('home')->with('success', 'আপনার অ্যাকাউন্ট মুছে ফেলা হয়েছে।');
     }
 
     public function addresses(): View
@@ -156,7 +156,7 @@ class AccountController extends Controller
 
         Address::create($data);
 
-        return back()->with('success', 'Address added.');
+        return back()->with('success', 'ঠিকানা যোগ হয়েছে।');
     }
 
     public function updateAddress(Request $request, Address $address): RedirectResponse
@@ -170,7 +170,7 @@ class AccountController extends Controller
 
         $address->update($data);
 
-        return back()->with('success', 'Address updated.');
+        return back()->with('success', 'ঠিকানা আপডেট হয়েছে।');
     }
 
     public function destroyAddress(Address $address): RedirectResponse
@@ -183,7 +183,7 @@ class AccountController extends Controller
             Auth::user()->addresses()->first()?->update(['is_default' => true]);
         }
 
-        return back()->with('success', 'Address removed.');
+        return back()->with('success', 'ঠিকানা মুছে ফেলা হয়েছে।');
     }
 
     public function setDefaultAddress(Address $address): RedirectResponse
@@ -192,7 +192,7 @@ class AccountController extends Controller
         Auth::user()->addresses()->update(['is_default' => false]);
         $address->update(['is_default' => true]);
 
-        return back()->with('success', 'Default address updated.');
+        return back()->with('success', 'মূল ঠিকানা পরিবর্তন হয়েছে।');
     }
 
     public function paymentMethods(): View
@@ -277,7 +277,7 @@ class AccountController extends Controller
         $normalized = User::requireValidBangladeshMobile($data['phone'], 'phone');
 
         if (User::query()->where('phone', $normalized)->exists()) {
-            throw ValidationException::withMessages(['phone' => 'This phone number is already registered.']);
+            throw ValidationException::withMessages(['phone' => 'এই মোবাইল নম্বর দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে।']);
         }
 
         $otp = $this->otpService->generate($normalized, self::OTP_PURPOSE_REGISTER);
@@ -290,7 +290,7 @@ class AccountController extends Controller
             ],
         ]);
 
-        return back()->with('success', 'Verification code sent to your phone.');
+        return back()->with('success', 'আপনার মোবাইলে একটি কোড পাঠানো হয়েছে।');
     }
 
     public function verifyPhoneOtp(Request $request): RedirectResponse
@@ -305,7 +305,7 @@ class AccountController extends Controller
 
         $pending = session('phone_register');
         if (! $pending) {
-            return redirect()->route('account.phone.register')->withErrors(['phone' => 'Please start phone registration again.']);
+            return redirect()->route('account.phone.register')->withErrors(['phone' => 'অনুগ্রহ করে আবার শুরু করুন।']);
         }
 
         $this->otpService->verify($pending['phone'], $data['code'], self::OTP_PURPOSE_REGISTER);
@@ -325,7 +325,7 @@ class AccountController extends Controller
         $request->session()->regenerate();
         $this->afterLogin($user);
 
-        return redirect()->route('account')->with('success', 'Phone registration complete.');
+        return redirect()->route('account')->with('success', 'রেজিস্ট্রেশন সম্পন্ন হয়েছে।');
     }
 
     public function showPhoneLogin(): View|RedirectResponse
@@ -356,14 +356,14 @@ class AccountController extends Controller
 
         if (! User::query()->where('phone', $normalized)->exists()) {
             RateLimiter::hit('phone-login:' . $request->ip(), 60);
-            throw ValidationException::withMessages(['phone' => 'No account found for this phone number.']);
+            throw ValidationException::withMessages(['phone' => 'এই মোবাইল নম্বরে কোনো অ্যাকাউন্ট নেই।']);
         }
 
         $otp = $this->otpService->generate($normalized, self::OTP_PURPOSE_LOGIN);
         $this->otpService->send($otp);
         session(['phone_login' => $normalized]);
 
-        return back()->with('success', 'Verification code sent to your phone.');
+        return back()->with('success', 'আপনার মোবাইলে একটি কোড পাঠানো হয়েছে।');
     }
 
     public function showRegister(): View
@@ -391,7 +391,7 @@ class AccountController extends Controller
         $expectedCaptcha = strtolower((string) session('register_captcha', ''));
         if ($expectedCaptcha === '' || strtolower($data['captcha']) !== $expectedCaptcha) {
             throw ValidationException::withMessages([
-                'captcha' => 'The captcha code is incorrect. Please try again.',
+                'captcha' => 'ক্যাপচা কোডটি ভুল হয়েছে, আবার চেষ্টা করুন।',
             ]);
         }
 
@@ -419,7 +419,7 @@ class AccountController extends Controller
         $this->afterLogin($user);
         RateLimiter::clear('register:' . $request->ip());
 
-        return redirect()->route('account')->with('success', 'Welcome! Your account has been created.');
+        return redirect()->route('account')->with('success', 'স্বাগতম! আপনার অ্যাকাউন্ট খোলা হয়েছে।');
     }
 
     public function showLogin(): View
@@ -449,7 +449,7 @@ class AccountController extends Controller
         RateLimiter::hit('login:' . $request->ip(), 60);
 
         throw ValidationException::withMessages([
-            'email' => 'These login details do not match our records.',
+            'email' => 'ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।',
         ]);
     }
 
@@ -472,7 +472,7 @@ class AccountController extends Controller
             ->where('id', '!=', $currentSessionId)
             ->delete();
 
-        return back()->with('success', 'Signed out of all other devices.');
+        return back()->with('success', 'অন্য সব ডিভাইস থেকে লগআউট করা হয়েছে।');
     }
 
     public function showForgotPassword(): View
@@ -533,7 +533,7 @@ class AccountController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('success', 'Verification link sent.');
+        return back()->with('success', 'যাচাইয়ের লিংক পাঠানো হয়েছে।');
     }
 
     public function convertGuest(Request $request, Order $order): RedirectResponse
@@ -576,7 +576,7 @@ class AccountController extends Controller
         $request->session()->regenerate();
         $this->afterLogin($user);
 
-        return redirect()->signedRoute('order.confirmed', ['order' => $order])->with('success', 'Account created and order linked.');
+        return redirect()->signedRoute('order.confirmed', ['order' => $order])->with('success', 'অ্যাকাউন্ট খোলা হয়েছে এবং অর্ডারটি যুক্ত হয়েছে।');
     }
 
     public function notifications(): View
@@ -591,14 +591,14 @@ class AccountController extends Controller
         abort_unless($notification->user_id === Auth::id(), 403);
         $notification->markAsRead();
 
-        return back()->with('success', 'Notification marked as read.');
+        return back()->with('success', 'নোটিফিকেশন পড়া হয়েছে।');
     }
 
     public function markAllNotificationsRead(): RedirectResponse
     {
         Auth::user()->notifications()->whereNull('read_at')->update(['read_at' => now()]);
 
-        return back()->with('success', 'All notifications marked as read.');
+        return back()->with('success', 'সব নোটিফিকেশন পড়া হয়েছে।');
     }
 
     public function compare(): View
@@ -652,7 +652,7 @@ class AccountController extends Controller
             ->first();
 
         if (! $order) {
-            return back()->withErrors(['order_number' => 'No order found with those details.'])->withInput();
+            return back()->withErrors(['order_number' => 'এই তথ্য দিয়ে কোনো অর্ডার পাওয়া যায়নি।'])->withInput();
         }
 
         session(['tracked_order' => $order->id]);
@@ -714,7 +714,7 @@ class AccountController extends Controller
             'marketing_opt_in' => $request->boolean('marketing_opt_in'),
         ]);
 
-        return back()->with('success', 'Newsletter preferences updated.');
+        return back()->with('success', 'নিউজলেটার সেটিং আপডেট হয়েছে।');
     }
 
     public function storeContact(Request $request): RedirectResponse
@@ -733,7 +733,7 @@ class AccountController extends Controller
 
         ContactMessage::create($data);
 
-        return back()->with('success', 'Thank you. We will get back to you soon.');
+        return back()->with('success', 'ধন্যবাদ! আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।');
     }
 
     private function verifyPhoneLogin(Request $request): RedirectResponse

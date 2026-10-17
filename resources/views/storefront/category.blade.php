@@ -349,7 +349,7 @@
     <div class="cat-mobile-toolbar">
         <button type="button" class="cat-mobile-filter-btn" id="cat-mobile-filter-open" aria-expanded="false" aria-controls="cat-sidebar">
             <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3zm3 6h12v2H6zm3 6h6v2H9z"/></svg>
-            <span>Filter Categories</span>
+            <span>ফিল্টার</span>
         </button>
     </div>
 
@@ -358,8 +358,8 @@
     <div class="cat-layout">
         <aside class="cat-sidebar" id="cat-sidebar" aria-hidden="true">
             <div class="cat-sidebar-header">
-                <h2 class="cat-sidebar-title">Filters</h2>
-                <button type="button" class="cat-sidebar-close" id="cat-mobile-filter-close" aria-label="Close filters">&times;</button>
+                <h2 class="cat-sidebar-title">ফিল্টার</h2>
+                <button type="button" class="cat-sidebar-close" id="cat-mobile-filter-close" aria-label="বন্ধ করুন">&times;</button>
             </div>
             <h2 class="cat-sidebar-title">Categories</h2>
 
@@ -389,7 +389,7 @@
             @endforeach
 
             <div class="cat-price-box">
-                <h2 class="cat-sidebar-title">Price</h2>
+                <h2 class="cat-sidebar-title">দাম</h2>
                 <form method="get" action="{{ route('category.show', $category->slug) }}" id="cat-price-form">
                     @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
@@ -402,7 +402,7 @@
                     <div class="cat-price-values">
                         {{ money_bd($filterMin) }} – {{ money_bd($filterMax) }}
                     </div>
-                    <button type="submit" class="cat-filter-btn">Apply</button>
+                    <button type="submit" class="cat-filter-btn">দেখুন</button>
                 </form>
             </div>
         </aside>
@@ -430,16 +430,16 @@
                 @if(request('max_price'))<input type="hidden" name="max_price" value="{{ request('max_price') }}">@endif
 
                 <label>
-                    Sort By
+                    সাজান
                     <select name="sort" onchange="this.form.submit()">
-                        <option value="">Default</option>
-                        <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: Low to High</option>
-                        <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: High to Low</option>
-                        <option value="name_asc" @selected(request('sort') === 'name_asc')>Name: A to Z</option>
+                        <option value="">ডিফল্ট</option>
+                        <option value="price_asc" @selected(request('sort') === 'price_asc')>দাম: কম থেকে বেশি</option>
+                        <option value="price_desc" @selected(request('sort') === 'price_desc')>দাম: বেশি থেকে কম</option>
+                        <option value="name_asc" @selected(request('sort') === 'name_asc')>নাম: A থেকে Z</option>
                     </select>
                 </label>
                 <label>
-                    Show
+                    দেখান
                     <select name="per_page" onchange="this.form.submit()">
                         <option value="24" @selected($perPage === 24)>24</option>
                         <option value="50" @selected($perPage === 50)>50</option>
@@ -452,7 +452,7 @@
                 @forelse($products as $product)
                     @include('storefront.partials.product-card', ['product' => $product])
                 @empty
-                    <p class="cat-empty">No products found in this category.</p>
+                    <p class="cat-empty">এই ক্যাটাগরিতে এখন কোনো প্রোডাক্ট নেই।</p>
                 @endforelse
             </div>
 

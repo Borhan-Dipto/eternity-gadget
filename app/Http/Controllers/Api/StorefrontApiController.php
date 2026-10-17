@@ -73,7 +73,7 @@ class StorefrontApiController extends Controller
         if (! $phone) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Invalid phone number.',
+                'message' => 'মোবাইল নম্বরটি সঠিক নয়।',
             ], 422);
         }
 
@@ -139,7 +139,7 @@ class StorefrontApiController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => collect($e->errors())->flatten()->first() ?: 'Validation failed.',
+                'message' => collect($e->errors())->flatten()->first() ?: 'তথ্যগুলো আবার দেখে নিন।',
             ], 422);
         }
     }

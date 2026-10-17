@@ -21,16 +21,16 @@ class OtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your verification code',
+            subject: 'আপনার যাচাইকরণ কোড',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            htmlString: '<p>Your ' . e($this->purpose) . ' code is:</p>'
+            htmlString: '<p>আপনার কোড:</p>'
                 . '<p><strong style="font-size:24px;letter-spacing:4px;">' . e($this->code) . '</strong></p>'
-                . '<p>This code expires shortly. Do not share it with anyone.</p>',
+                . '<p>কোডটি কিছুক্ষণের মধ্যে মেয়াদোত্তীর্ণ হবে। কাউকে এই কোড দেবেন না।</p>',
         );
     }
 }

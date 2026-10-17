@@ -76,21 +76,21 @@ class StorefrontController extends Controller
             return redirect()->route('checkout');
         }
 
-        return back()->with('success', 'Product added to cart.');
+        return back()->with('success', 'প্রোডাক্টটি কার্টে যোগ হয়েছে।');
     }
 
     public function updateCart(Request $request): RedirectResponse
     {
         $this->cartService->update($request->input('quantities', []));
 
-        return back()->with('success', 'Cart updated.');
+        return back()->with('success', 'কার্ট আপডেট হয়েছে।');
     }
 
     public function removeFromCart(Request $request): RedirectResponse
     {
         $this->cartService->remove($request->string('cart_key')->toString());
 
-        return back()->with('success', 'Product removed.');
+        return back()->with('success', 'প্রোডাক্টটি কার্ট থেকে সরানো হয়েছে।');
     }
 
     public function saveForLater(Request $request): RedirectResponse
@@ -98,7 +98,7 @@ class StorefrontController extends Controller
         $request->validate(['cart_key' => ['required', 'string']]);
         $this->cartService->saveForLater($request->string('cart_key')->toString());
 
-        return back()->with('success', 'Item saved for later.');
+        return back()->with('success', 'প্রোডাক্টটি পরে কেনার জন্য রাখা হয়েছে।');
     }
 
     public function moveToCart(Request $request): RedirectResponse
@@ -106,7 +106,7 @@ class StorefrontController extends Controller
         $request->validate(['cart_key' => ['required', 'string']]);
         $this->cartService->moveToCart($request->string('cart_key')->toString());
 
-        return back()->with('success', 'Item moved to cart.');
+        return back()->with('success', 'প্রোডাক্টটি কার্টে নেওয়া হয়েছে।');
     }
 
     public function checkout(): View|RedirectResponse
@@ -180,7 +180,7 @@ class StorefrontController extends Controller
         $order = $this->checkoutService->placeOrder($data, $idempotencyKey);
 
         return redirect()->signedRoute('order.confirmed', ['order' => $order])
-            ->with('success', 'Your order has been placed.');
+            ->with('success', 'আপনার অর্ডারটি গ্রহণ করা হয়েছে।');
     }
 
     public function orderConfirmed(Order $order): View
@@ -199,7 +199,7 @@ class StorefrontController extends Controller
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
         NewsletterSubscriber::updateOrCreate(['email' => $data['email']], ['is_active' => true]);
 
-        return back()->with('success', 'Thank you for subscribing.');
+        return back()->with('success', 'সাবস্ক্রাইব করার জন্য ধন্যবাদ।');
     }
 
     public function wishlist(): View
@@ -229,7 +229,7 @@ class StorefrontController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Wishlist updated.');
+        return back()->with('success', 'উইশলিস্ট আপডেট হয়েছে।');
     }
 
     private function wishlistQuery()

@@ -146,11 +146,11 @@
 </style>
 
 <div class="account-box login-page">
-    <h1>Login From Here</h1>
+    <h1>লগইন করুন</h1>
 
     @if($errors->any())
         <div class="login-error">
-            {{ $errors->first('email') ?: 'Please check your login details and try again.' }}
+            {{ $errors->first('email') ?: 'ইমেইল বা পাসওয়ার্ড ভুল হয়েছে, আবার চেষ্টা করুন।' }}
         </div>
     @endif
 
@@ -158,14 +158,14 @@
         @csrf
 
         <div class="login-field">
-            <label for="email">E-Mail Address</label>
+            <label for="email">ইমেইল</label>
             <input
                 type="email"
                 id="email"
                 name="email"
                 class="login-input"
                 value="{{ old('email') }}"
-                placeholder="E-Mail Address"
+                placeholder="আপনার ইমেইল"
                 required
                 autofocus
                 autocomplete="email"
@@ -173,24 +173,24 @@
         </div>
 
         <div class="login-field">
-            <label for="password">Password</label>
+            <label for="password">পাসওয়ার্ড</label>
             <input
                 type="password"
                 id="password"
                 name="password"
                 class="login-input"
-                placeholder="Password"
+                placeholder="পাসওয়ার্ড"
                 required
                 autocomplete="current-password"
             >
         </div>
 
         <div class="login-links">
-            <a href="{{ route('account.password.request') }}">Forgotten Password</a>
-            <a href="{{ route('account.register') }}">Register Account</a>
+            <a href="{{ route('account.password.request') }}">পাসওয়ার্ড ভুলে গেছেন?</a>
+            <a href="{{ route('account.register') }}">নতুন অ্যাকাউন্ট খুলুন</a>
         </div>
 
-        <button class="login-submit" type="submit">Login</button>
+        <button class="login-submit" type="submit">লগইন</button>
     </form>
 </div>
 @endsection

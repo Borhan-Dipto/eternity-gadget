@@ -183,4 +183,33 @@ class Order extends Model
     {
         return URL::signedRoute('orders.invoice', ['order' => $this], now()->addDays(30));
     }
+
+    /** Order status in Bangla, for customer pages and emails. */
+    public function statusLabelBn(): string
+    {
+        return self::statusLabelsBn()[$this->status] ?? ucfirst((string) $this->status);
+    }
+
+    /** @return array<string, string> */
+    public static function statusLabelsBn(): array
+    {
+        return [
+            self::STATUS_PENDING => 'অর্ডার গ্রহণ করা হয়েছে',
+            self::STATUS_PROCESSING => 'প্রসেস করা হচ্ছে',
+            self::STATUS_SHIPPED => 'কুরিয়ারে পাঠানো হয়েছে',
+            self::STATUS_DELIVERED => 'ডেলিভারি সম্পন্ন',
+            self::STATUS_CANCELLED => 'বাতিল',
+        ];
+    }
+
+    /** Payment status in Bangla. Cash on delivery that is not paid yet reads as "pay on delivery". */
+    public function paymentLabelBn(): string
+    {
+        return match ($this->payment_status) {
+            self::PAYMENT_STATUS_PAID => 'পরিশোধিত',
+            self::PAYMENT_STATUS_FAILED => 'পেমেন্ট হয়নি',
+            self::PAYMENT_STATUS_REFUNDED => 'টাকা ফেরত দেওয়া হয়েছে',
+            default => $this->payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি (পণ্য হাতে পেয়ে টাকা দিন)' : 'বাকি',
+        };
+    }
 }

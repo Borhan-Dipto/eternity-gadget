@@ -4,7 +4,7 @@
             <img src="{{ media_url($product->primaryImage()) }}" alt="{{ $product->name }}">
         </a>
         @if($product->sale_price && $product->price > 0)
-            <span class="badge-sale">{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}% OFF</span>
+            <span class="badge-sale">{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}% ছাড়</span>
         @endif
     </div>
     <h4 class="product-card-title"><a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a></h4>

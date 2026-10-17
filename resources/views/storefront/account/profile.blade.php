@@ -11,36 +11,36 @@
 @endphp
 
 <div class="account-box">
-    <h1>Your Personal Details</h1>
+    <h1>আপনার তথ্য</h1>
 
     <form method="post" action="{{ route('account.profile.update') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="account-detail-row">
-            <label for="first_name"><span class="req">*</span> First Name</label>
+            <label for="first_name"><span class="req">*</span> নামের প্রথম অংশ</label>
             <input type="text" id="first_name" name="first_name" value="{{ $firstName }}" required>
         </div>
 
         <div class="account-detail-row">
-            <label for="last_name"><span class="req">*</span> Last Name</label>
+            <label for="last_name"><span class="req">*</span> নামের শেষ অংশ</label>
             <input type="text" id="last_name" name="last_name" value="{{ $lastName }}" required>
         </div>
 
         <div class="account-detail-row">
-            <label for="email"><span class="req">*</span> E-Mail</label>
+            <label for="email"><span class="req">*</span> ইমেইল</label>
             <input type="email" id="email" value="{{ $user->email }}" disabled readonly>
         </div>
 
         @include('storefront.partials.phone-input', [
             'name' => 'phone',
             'value' => old('phone', $user->phone),
-            'label' => 'Mobile',
+            'label' => 'মোবাইল নম্বর',
             'variant' => 'account-row',
         ])
 
         <div class="account-actions">
-            <a href="{{ route('account') }}" class="account-btn">Back</a>
-            <button class="account-btn" type="submit">Continue</button>
+            <a href="{{ route('account') }}" class="account-btn">ফিরে যান</a>
+            <button class="account-btn" type="submit">সেভ করুন</button>
         </div>
     </form>
 </div>

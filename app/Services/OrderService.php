@@ -22,7 +22,7 @@ class OrderService
 
         if (! $order->canCancel()) {
             throw ValidationException::withMessages([
-                'order' => 'This order can no longer be cancelled. The 10-minute cancellation window has ended.',
+                'order' => 'অর্ডার করার ১০ মিনিট পার হয়ে গেছে, তাই এখন আর বাতিল করা যাবে না। প্রয়োজনে আমাদের কল/WhatsApp করুন।',
             ]);
         }
 
@@ -31,7 +31,7 @@ class OrderService
 
             if (! $order->canCancel()) {
                 throw ValidationException::withMessages([
-                    'order' => 'This order can no longer be cancelled.',
+                    'order' => 'এই অর্ডারটি এখন আর বাতিল করা যাবে না।',
                 ]);
             }
 
@@ -133,17 +133,17 @@ class OrderService
     public function sendStatusNotification(Order $order): void
     {
         $title = match ($order->status) {
-            Order::STATUS_CANCELLED => 'Order cancelled',
-            Order::STATUS_PROCESSING => 'Order is being processed',
-            Order::STATUS_SHIPPED => 'Order shipped',
-            Order::STATUS_DELIVERED => 'Order delivered',
-            default => 'Order update',
+            Order::STATUS_CANCELLED => 'অর্ডার বাতিল হয়েছে',
+            Order::STATUS_PROCESSING => 'অর্ডার প্রসেস করা হচ্ছে',
+            Order::STATUS_SHIPPED => 'অর্ডার কুরিয়ারে পাঠানো হয়েছে',
+            Order::STATUS_DELIVERED => 'অর্ডার ডেলিভারি হয়েছে',
+            default => 'অর্ডার আপডেট',
         };
 
         $body = sprintf(
-            'Order %s is now %s.',
+            'অর্ডার %s — এখন: %s।',
             $order->order_number,
-            str_replace('_', ' ', $order->status)
+            $order->statusLabelBn()
         );
 
         $this->notificationService->notify(

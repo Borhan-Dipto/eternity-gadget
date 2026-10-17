@@ -317,7 +317,7 @@ class CatalogController extends Controller
 
         if ($expectedCaptcha === '' || strtolower($data['captcha']) !== $expectedCaptcha) {
             throw ValidationException::withMessages([
-                'captcha' => 'The captcha code is incorrect. Please try again.',
+                'captcha' => 'ক্যাপচা কোডটি ভুল হয়েছে, আবার চেষ্টা করুন।',
             ]);
         }
 
@@ -349,7 +349,7 @@ class CatalogController extends Controller
         ProductReview::create($reviewData);
 
         return back()
-            ->with('success', 'Thank you. Your review will appear after moderation.')
+            ->with('success', 'ধন্যবাদ! যাচাইয়ের পর আপনার রিভিউটি দেখা যাবে।')
             ->withFragment('reviews');
     }
 
@@ -370,7 +370,7 @@ class CatalogController extends Controller
             'is_published' => false,
         ]);
 
-        return back()->with('success', 'Your question has been submitted.');
+        return back()->with('success', 'আপনার প্রশ্নটি পাঠানো হয়েছে।');
     }
 
     public function stockAlert(Product $product, Request $request): RedirectResponse
@@ -386,7 +386,7 @@ class CatalogController extends Controller
             ['notified_at' => null]
         );
 
-        return back()->with('success', 'We will notify you when this product is back in stock.');
+        return back()->with('success', 'প্রোডাক্টটি স্টকে এলে আপনাকে জানানো হবে।');
     }
 
     public function toggleComparison(Product $product): RedirectResponse
@@ -399,17 +399,17 @@ class CatalogController extends Controller
             $compare = array_values(array_filter($compare, fn ($id) => $id !== $product->id));
             session(['compare' => $compare]);
 
-            return back()->with('success', 'Removed from comparison.');
+            return back()->with('success', 'তুলনা থেকে সরানো হয়েছে।');
         }
 
         if (count($compare) >= self::COMPARE_LIMIT) {
-            return back()->withErrors(['compare' => 'You can compare up to ' . self::COMPARE_LIMIT . ' products.']);
+            return back()->withErrors(['compare' => 'সর্বোচ্চ ' . self::COMPARE_LIMIT . 'টি প্রোডাক্ট তুলনা করা যায়।']);
         }
 
         $compare[] = $product->id;
         session(['compare' => $compare]);
 
-        return back()->with('success', 'Added to comparison.');
+        return back()->with('success', 'তুলনায় যোগ হয়েছে।');
     }
 
     private function trackRecentlyViewed(int $productId): void

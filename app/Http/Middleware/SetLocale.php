@@ -6,20 +6,18 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * The shop is always shown in Bangla (buttons, forms, messages, validation errors);
+ * menu and product names stay in English because they come from the database.
+ * The admin panel stays in English.
+ */
 class SetLocale
 {
-    /** @var list<string> */
-    private const SUPPORTED = ['en', 'bn'];
-
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = session('locale', config('app.locale', 'en'));
+        $isAdmin = $request->is('admin', 'admin/*', 'livewire/*', 'filament/*');
 
-        if (! in_array($locale, self::SUPPORTED, true)) {
-            $locale = 'en';
-        }
-
-        app()->setLocale($locale);
+        app()->setLocale($isAdmin ? 'en' : 'bn');
 
         return $next($request);
     }

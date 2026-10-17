@@ -1594,7 +1594,7 @@
 
                         @empty
 
-                            <p class="mt-2 mb-0">No notifications.</p>
+                            <p class="mt-2 mb-0">কোনো নোটিফিকেশন নেই।</p>
 
                         @endforelse
 
@@ -1964,7 +1964,7 @@
 
         <span class="fc-icon"><svg viewBox="0 0 24 24"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 4c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2zm2-4c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm4 4c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2z"/></svg></span>
 
-        <span class="fc-items"><span id="floating-cart-count">0</span> ITEM</span>
+        <span class="fc-items"><span id="floating-cart-count">0</span> টি</span>
 
     </div>
 
@@ -2362,7 +2362,7 @@
             }
 
             if (localInput.value.length !== 11) {
-                localInput.setCustomValidity('Enter exactly 11 digits after +88.');
+                localInput.setCustomValidity('সঠিক ১১ সংখ্যার মোবাইল নম্বর লিখুন (যেমন 01XXXXXXXXX)।');
                 return false;
             }
 
@@ -2390,19 +2390,19 @@
 
                     if (feedbackEl) {
                         if (!data.valid) {
-                            feedbackEl.textContent = data.message || 'Invalid phone';
+                            feedbackEl.textContent = data.message || 'মোবাইল নম্বরটি সঠিক নয়';
                             feedbackEl.style.color = '#c0392b';
                         } else if (data.sharing_warning) {
-                            feedbackEl.textContent = 'This phone has been used for previous orders.';
+                            feedbackEl.textContent = 'এই নম্বর দিয়ে আগে অর্ডার করা হয়েছে।';
                             feedbackEl.style.color = '#f5924c';
                         } else if (!data.available) {
-                            feedbackEl.textContent = 'Phone already registered.';
+                            feedbackEl.textContent = 'এই নম্বর দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে।';
                             feedbackEl.style.color = '#3498db';
                         } else {
                             feedbackEl.textContent = '';
                         }
                     } else if (!data.valid) {
-                        localInput.setCustomValidity(data.message || 'Invalid phone');
+                        localInput.setCustomValidity(data.message || 'মোবাইল নম্বরটি সঠিক নয়');
                     } else {
                         localInput.setCustomValidity('');
                     }
@@ -2431,6 +2431,47 @@
 
 @stack('scripts')
 
+<script>
+// Browser form warnings in Bangla (fields that already set their own message are left alone)
+(function () {
+    function bnMessage(el) {
+        const v = el.validity;
+        if (v.valueMissing) {
+            if (el.type === 'radio') return 'অনুগ্রহ করে একটি অপশন বেছে নিন।';
+            if (el.type === 'checkbox') return 'চালিয়ে যেতে এই বক্সে টিক দিন।';
+            if (el.tagName === 'SELECT') return 'অনুগ্রহ করে একটি অপশন বেছে নিন।';
+            return 'এই ঘরটি পূরণ করুন।';
+        }
+        if (v.typeMismatch && el.type === 'email') return 'সঠিক ইমেইল ঠিকানা লিখুন।';
+        if (v.tooShort) return 'কমপক্ষে ' + el.minLength + ' অক্ষর লিখুন।';
+        if (v.rangeUnderflow) return 'সর্বনিম্ন ' + el.min + ' দিতে হবে।';
+        if (v.rangeOverflow) return 'সর্বোচ্চ ' + el.max + ' দেওয়া যাবে।';
+        if (v.patternMismatch || v.badInput) return 'সঠিক তথ্য লিখুন।';
+        return '';
+    }
+    document.addEventListener('invalid', function (e) {
+        const el = e.target;
+        if (el.dataset.bnMsg === undefined && el.validationMessage && !el.validity.customError) {
+            el.setCustomValidity(bnMessage(el));
+            el.dataset.bnMsg = '1';
+        }
+    }, true);
+    function clear(e) {
+        const el = e.target;
+        if (el && el.dataset && el.dataset.bnMsg === '1') {
+            el.setCustomValidity('');
+            delete el.dataset.bnMsg;
+            if (el.type === 'radio' && el.name) {
+                document.querySelectorAll('input[type=radio][name="' + el.name + '"]').forEach(function (r) {
+                    if (r.dataset.bnMsg === '1') { r.setCustomValidity(''); delete r.dataset.bnMsg; }
+                });
+            }
+        }
+    }
+    document.addEventListener('input', clear, true);
+    document.addEventListener('change', clear, true);
+})();
+</script>
 </body>
 
 </html>

@@ -5,16 +5,16 @@
 @if($order->canCancel())
     <div class="order-cancel-box" data-cancel-until="{{ $order->cancelWindowEndsAt()->toIso8601String() }}">
         <p class="order-cancel-note">
-            You can cancel this order within <strong class="order-cancel-timer">10:00</strong>.
-            After that it is automatically confirmed for processing.
+            চাইলে <strong class="order-cancel-timer">10:00</strong> মিনিটের মধ্যে অর্ডারটি বাতিল করতে পারবেন।
+            এরপর অর্ডারটি স্বয়ংক্রিয়ভাবে কনফার্ম হয়ে যাবে।
         </p>
-        <form method="post" action="{{ route('orders.cancel', $order) }}" onsubmit="return confirm('Cancel this order?');">
+        <form method="post" action="{{ route('orders.cancel', $order) }}" onsubmit="return confirm('আপনি কি অর্ডারটি বাতিল করতে চান?');">
             @csrf
-            <button type="submit" class="order-btn order-btn-danger">Cancel Order</button>
+            <button type="submit" class="order-btn order-btn-danger">অর্ডার বাতিল করুন</button>
         </form>
     </div>
 @elseif($order->status === \App\Models\Order::STATUS_PENDING)
-    <p class="order-status-note">This order is being confirmed for processing.</p>
+    <p class="order-status-note">অর্ডারটি কনফার্ম করে প্রসেস করা হচ্ছে।</p>
 @endif
 
 @once
@@ -37,7 +37,7 @@
                     box.querySelector('form')?.remove();
                     const note = box.querySelector('.order-cancel-note');
                     if (note) {
-                        note.textContent = 'The cancellation window has ended. This order is now being processed.';
+                        note.textContent = 'বাতিলের সময় শেষ। অর্ডারটি এখন প্রসেস করা হচ্ছে।';
                     }
                     clearInterval(interval);
                 }

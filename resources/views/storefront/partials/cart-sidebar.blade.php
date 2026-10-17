@@ -257,26 +257,26 @@
 
 <aside class="cart-sidebar" id="cart-sidebar" aria-label="Shopping cart" aria-hidden="true">
     <div class="cs-header">
-        <h2>Shopping Cart</h2>
-        <button type="button" class="cs-close" id="cart-sidebar-close" aria-label="Close cart">&times;</button>
+        <h2>আপনার কার্ট</h2>
+        <button type="button" class="cs-close" id="cart-sidebar-close" aria-label="বন্ধ করুন">&times;</button>
     </div>
 
     <div class="cs-body" id="cart-sidebar-items">
-        <p class="cs-empty">Your cart is empty.</p>
+        <p class="cs-empty">আপনার কার্ট খালি।</p>
     </div>
 
     <div class="cs-footer">
         <div class="cs-total-line">
-            <span>Sub-Total</span>
+            <span>সাবটোটাল</span>
             <span id="cs-subtotal">৳0</span>
         </div>
         <div class="cs-total-line grand">
-            <span>Total</span>
+            <span>মোট</span>
             <span id="cs-total">৳0</span>
         </div>
         <div class="cs-actions">
-            <button type="button" class="cs-btn cs-btn-view" id="cart-sidebar-continue">VIEW CART</button>
-            <a href="{{ route('checkout') }}" class="cs-btn cs-btn-checkout" id="cart-sidebar-checkout">CHECKOUT</a>
+            <button type="button" class="cs-btn cs-btn-view" id="cart-sidebar-continue">আরও কেনাকাটা</button>
+            <a href="{{ route('checkout') }}" class="cs-btn cs-btn-checkout" id="cart-sidebar-checkout">অর্ডার করুন</a>
         </div>
     </div>
 </aside>
@@ -303,7 +303,7 @@
 
     function renderItems(data) {
         if (!data.items || data.items.length === 0) {
-            itemsEl.innerHTML = '<p class="cs-empty">Your cart is empty.</p>';
+            itemsEl.innerHTML = '<p class="cs-empty">আপনার কার্ট খালি।</p>';
         } else {
             itemsEl.innerHTML = data.items.map((item) => `
                 <div class="cs-item" data-cart-key="${escapeHtml(item.cart_key)}">
@@ -314,7 +314,7 @@
                         </div>
                         <div class="cs-thumb-wrap">
                             <img class="cs-thumb" src="${escapeHtml(item.image)}" alt="">
-                            <button type="button" class="cs-remove" data-remove="${escapeHtml(item.cart_key)}" aria-label="Remove">&times;</button>
+                            <button type="button" class="cs-remove" data-remove="${escapeHtml(item.cart_key)}" aria-label="সরান">&times;</button>
                         </div>
                     </div>
                     <div class="cs-item-footer">

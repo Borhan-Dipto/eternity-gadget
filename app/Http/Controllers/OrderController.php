@@ -33,7 +33,7 @@ class OrderController extends Controller
 
         $this->orderService->cancel($order, $data['reason'] ?? null);
 
-        return back()->with('success', 'Order cancelled.');
+        return back()->with('success', 'অর্ডারটি বাতিল করা হয়েছে।');
     }
 
     public function reorder(Order $order): RedirectResponse
@@ -41,7 +41,7 @@ class OrderController extends Controller
         $this->authorizeOrder($order);
         $this->orderService->reorder($order);
 
-        return redirect()->route('cart')->with('success', 'Items added to cart where available.');
+        return redirect()->route('cart')->with('success', 'স্টকে থাকা প্রোডাক্টগুলো কার্টে যোগ করা হয়েছে।');
     }
 
     public function invoice(Order $order): View
@@ -57,7 +57,7 @@ class OrderController extends Controller
         $this->authorizeOrder($order);
 
         if ($order->status !== Order::STATUS_SHIPPED) {
-            return back()->withErrors(['order' => 'Only shipped orders can be confirmed as delivered.']);
+            return back()->withErrors(['order' => 'শুধু পাঠানো (শিপড) অর্ডারই ডেলিভারি কনফার্ম করা যায়।']);
         }
 
         $order->update([
@@ -67,7 +67,7 @@ class OrderController extends Controller
 
         $this->orderService->sendStatusNotification($order->fresh(['items', 'user']));
 
-        return back()->with('success', 'Delivery confirmed. Thank you!');
+        return back()->with('success', 'ডেলিভারি কনফার্ম হয়েছে। ধন্যবাদ!');
     }
 
     private function authorizeOrder(Order $order): void

@@ -18,7 +18,7 @@ class CouponService
             ->first();
 
         if (! $coupon || ! $coupon->isValid()) {
-            throw ValidationException::withMessages(['coupon' => 'This coupon code is invalid or expired.']);
+            throw ValidationException::withMessages(['coupon' => 'কুপন কোডটি সঠিক নয় বা মেয়াদ শেষ।']);
         }
 
         if ($coupon->min_order !== null && $subtotal < (float) $coupon->min_order) {
@@ -81,7 +81,7 @@ class CouponService
 
         if ($coupons->contains(fn (Coupon $coupon) => ! $coupon->is_stackable)) {
             throw ValidationException::withMessages([
-                'coupon' => 'One or more coupons cannot be combined with other promotions.',
+                'coupon' => 'এই কুপন অন্য অফারের সাথে একসাথে ব্যবহার করা যাবে না।',
             ]);
         }
     }

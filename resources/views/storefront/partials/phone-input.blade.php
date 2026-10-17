@@ -40,7 +40,7 @@
     </div>
 @elseif($variant === 'register')
     <div class="reg-field ig-phone-wrap" data-phone-wrap{!! $feedbackAttr !!}>
-        <label for="{{ $localId }}">@if($isRequired)<span class="req">*</span> @endif{{ $label ?? 'Mobile' }}</label>
+        <label for="{{ $localId }}">@if($isRequired)<span class="req">*</span> @endif{{ $label ?? 'মোবাইল নম্বর' }}</label>
         <div class="reg-phone-input">
             <span class="reg-phone-prefix">+88</span>
             <input

@@ -62,7 +62,7 @@ class PhoneService
 
         return [
             'warning' => true,
-            'message' => 'This phone number is already associated with another account or previous orders.',
+            'message' => 'এই মোবাইল নম্বরটি অন্য একটি অ্যাকাউন্টে ব্যবহার হয়েছে।',
             'match_count' => $matchCount,
         ];
     }

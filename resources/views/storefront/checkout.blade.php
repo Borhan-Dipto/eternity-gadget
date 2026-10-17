@@ -25,11 +25,11 @@
         'select_area' => 'এলাকা নির্বাচন করুন',
         'select_payment' => 'পেমেন্ট পদ্ধতি নির্বাচন করুন',
         'cod' => 'ক্যাশ অন ডেলিভারি',
-        'terms' => 'I have read and agree to the Terms & Conditions',
+        'terms' => 'আমি শর্তাবলী পড়েছি এবং রাজি আছি',
         'confirm_order' => 'অর্ডার কনফার্ম করুন',
         'your_order' => 'আপনার অর্ডার',
-        'sub_total' => 'Sub-Total',
-        'total' => 'Total',
+        'sub_total' => 'সাবটোটাল',
+        'total' => 'মোট',
     ];
 
     $shippingDisplayNames = [
@@ -41,7 +41,7 @@
 
     $defaultShippingLabel = $shippingDisplayNames[$defaultShippingCode]
         ?? $shippingMethods->firstWhere('code', $defaultShippingCode)?->name
-        ?? 'Shipping';
+        ?? 'ডেলিভারি চার্জ';
 @endphp
 <style>
     .co-page {
@@ -404,7 +404,7 @@
     @if($cartItems->isEmpty())
         <div class="co-empty">
             <p>{{ __('messages.empty_cart') }}</p>
-            <a href="{{ route('home') }}" class="co-btn-submit" style="display:inline-block;width:auto;margin-top:16px;text-decoration:none;">Continue Shopping</a>
+            <a href="{{ route('home') }}" class="co-btn-submit" style="display:inline-block;width:auto;margin-top:16px;text-decoration:none;">কেনাকাটা শুরু করুন</a>
         </div>
     @else
         <div class="co-layout">
@@ -473,7 +473,7 @@
 
                     <label class="co-terms">
                         <input type="checkbox" name="terms_agreed" value="1" @checked(old('terms_agreed')) required>
-                        <span>{!! str_replace('Terms & Conditions', '<a href="' . route('page.show', 'terms-conditions') . '" target="_blank">Terms & Conditions</a>', e($co['terms'])) !!}</span>
+                        <span>{!! str_replace('শর্তাবলী', '<a href="' . route('page.show', 'terms-conditions') . '" target="_blank">শর্তাবলী</a>', e($co['terms'])) !!}</span>
                     </label>
 
                     <button class="co-btn-submit" type="submit" id="checkout-submit-btn">
@@ -496,7 +496,7 @@
                             <form method="post" action="{{ route('cart.remove') }}" class="co-remove-form">
                                 @csrf
                                 <input type="hidden" name="cart_key" value="{{ $item['cart_key'] }}">
-                                <button type="submit" class="co-remove" aria-label="Remove item">&times;</button>
+                                <button type="submit" class="co-remove" aria-label="সরান">&times;</button>
                             </form>
 
                             <div class="co-product-row">
@@ -518,9 +518,9 @@
                                     @csrf
                                     <input type="hidden" name="quantities[{{ $item['cart_key'] }}]" value="{{ $item['quantity'] }}" class="co-qty-input">
                                     <div class="co-qty">
-                                        <button type="button" class="co-qty-minus" aria-label="Decrease quantity">&minus;</button>
+                                        <button type="button" class="co-qty-minus" aria-label="কমান">&minus;</button>
                                         <span class="co-qty-display">{{ $item['quantity'] }}</span>
-                                        <button type="button" class="co-qty-plus" aria-label="Increase quantity">+</button>
+                                        <button type="button" class="co-qty-plus" aria-label="বাড়ান">+</button>
                                     </div>
                                 </form>
                                 <div class="co-product-prices">
@@ -542,7 +542,7 @@
                         </div>
                         @if((float) $taxEstimate > 0)
                             <div class="co-total-line">
-                                <span>Tax ({{ rtrim(rtrim(number_format((float) setting('tax_rate', '0'), 2), '0'), '.') }}%)</span>
+                                <span>ট্যাক্স ({{ rtrim(rtrim(number_format((float) setting('tax_rate', '0'), 2), '0'), '.') }}%)</span>
                                 <span id="summary-tax">{{ money_bd($taxEstimate) }}</span>
                             </div>
                         @endif

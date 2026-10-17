@@ -7,7 +7,7 @@
 @auth
     @if(auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
         <div class="account-box" style="margin-bottom:20px;border-color:#f0c040;">
-            <p class="mb-0">Please verify your email address. <a href="{{ route('verification.notice') }}">Resend verification email</a></p>
+            <p class="mb-0">আপনার ইমেইল যাচাই করা হয়নি। <a href="{{ route('verification.notice') }}">আবার লিংক পাঠান</a></p>
         </div>
     @endif
 

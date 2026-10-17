@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'Order Confirmed')
+@section('title', 'অর্ডার সম্পন্ন')
 
 @section('content')
 @if($trackPurchase ?? false)
@@ -9,14 +9,7 @@
     @endpush
 @endif
 @php
-    $statusLabels = [
-        'pending' => 'Pending',
-        'processing' => 'Processing',
-        'shipped' => 'Shipped',
-        'delivered' => 'Delivered',
-        'cancelled' => 'Cancelled',
-    ];
-    $statusLabel = $statusLabels[$order->status] ?? ucfirst($order->status);
+    $statusLabel = $order->statusLabelBn();
     $showGuestSignup = auth()->guest() && ! $order->user_id;
 @endphp
 
@@ -289,16 +282,16 @@
     <div class="oc-wrap">
         <div class="oc-success">
             <div class="oc-success-icon" aria-hidden="true">&#10003;</div>
-            <h1>Thank you for your order!</h1>
-            <p>We have received your order and will process it shortly.</p>
+            <h1>ধন্যবাদ! আপনার অর্ডারটি সম্পন্ন হয়েছে</h1>
+            <p>অর্ডার কনফার্ম করতে আমরা শীঘ্রই আপনাকে কল করব। পণ্য হাতে পেয়ে টাকা পরিশোধ করবেন।</p>
             <div class="oc-order-meta">
-                <span>Order <strong>{{ $order->order_number }}</strong></span>
+                <span>অর্ডার নম্বর <strong>{{ $order->order_number }}</strong></span>
                 <span class="oc-status">{{ $statusLabel }}</span>
             </div>
         </div>
 
         <div class="oc-card">
-            <div class="oc-card-title">Order Summary</div>
+            <div class="oc-card-title">অর্ডারের হিসাব</div>
 
             @foreach($order->items as $item)
                 <div class="oc-item">
@@ -315,30 +308,36 @@
 
             <div class="oc-totals">
                 <div class="oc-total-line">
-                    <span>Subtotal</span>
+                    <span>সাবটোটাল</span>
                     <span>{{ money_bd($order->subtotal) }}</span>
                 </div>
+                @if((float) $order->discount > 0)
+                    <div class="oc-total-line">
+                        <span>ছাড়</span>
+                        <span>−{{ money_bd($order->discount) }}</span>
+                    </div>
+                @endif
                 <div class="oc-total-line">
-                    <span>Shipping</span>
-                    <span>{{ money_bd($order->shipping_cost) }}</span>
+                    <span>ডেলিভারি চার্জ</span>
+                    <span>{{ (float) $order->shipping_cost > 0 ? money_bd($order->shipping_cost) : 'ফ্রি' }}</span>
                 </div>
                 @if((float) $order->tax_amount > 0)
                     <div class="oc-total-line">
-                        <span>Tax</span>
+                        <span>ট্যাক্স</span>
                         <span>{{ money_bd($order->tax_amount) }}</span>
                     </div>
                 @endif
                 <div class="oc-total-line grand">
-                    <span>Total</span>
+                    <span>মোট</span>
                     <span>{{ money_bd($order->total) }}</span>
                 </div>
             </div>
         </div>
 
         <div class="oc-actions">
-            <a href="{{ route('orders.show', $order) }}" class="oc-btn oc-btn-primary">View Order</a>
-            <a href="{{ $order->invoiceUrl() }}" class="oc-btn oc-btn-secondary" target="_blank" rel="noopener">Download Invoice</a>
-            <a href="{{ route('home') }}" class="oc-btn oc-btn-link">Continue Shopping</a>
+            <a href="{{ route('orders.show', $order) }}" class="oc-btn oc-btn-primary">অর্ডার দেখুন</a>
+            <a href="{{ $order->invoiceUrl() }}" class="oc-btn oc-btn-secondary" target="_blank" rel="noopener">ইনভয়েস ডাউনলোড</a>
+            <a href="{{ route('home') }}" class="oc-btn oc-btn-link">আরও কেনাকাটা করুন</a>
         </div>
 
         <div style="margin-top:24px;">
@@ -347,16 +346,16 @@
 
         @if($showGuestSignup)
             <div class="oc-signup">
-                <h2>Create an account</h2>
-                <p class="oc-signup-lead">Track this order, view history, and checkout faster next time.</p>
+                <h2>অ্যাকাউন্ট খুলুন (ইচ্ছা হলে)</h2>
+                <p class="oc-signup-lead">অর্ডার ট্র্যাক করুন, আগের অর্ডার দেখুন আর পরের বার দ্রুত অর্ডার করুন।</p>
 
                 <form method="post" action="{{ route('account.convert-guest', $order) }}">
                     @csrf
                     <div class="oc-field">
-                        <input type="text" name="name" value="{{ old('name', $order->customer_name) }}" placeholder="Full name" required autocomplete="name">
+                        <input type="text" name="name" value="{{ old('name', $order->customer_name) }}" placeholder="আপনার নাম" required autocomplete="name">
                     </div>
                     <div class="oc-field">
-                        <input type="email" name="email" value="{{ old('email', $order->customer_email) }}" placeholder="Email address" required autocomplete="email">
+                        <input type="email" name="email" value="{{ old('email', $order->customer_email) }}" placeholder="ইমেইল ঠিকানা" required autocomplete="email">
                     </div>
                     @include('storefront.partials.phone-input', [
                         'name' => 'phone',
@@ -364,16 +363,16 @@
                         'variant' => 'oc-field',
                     ])
                     <div class="oc-field">
-                        <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
+                        <input type="password" name="password" placeholder="পাসওয়ার্ড" required autocomplete="new-password">
                     </div>
                     <div class="oc-field">
-                        <input type="password" name="password_confirmation" placeholder="Confirm password" required autocomplete="new-password">
+                        <input type="password" name="password_confirmation" placeholder="পাসওয়ার্ড আবার লিখুন" required autocomplete="new-password">
                     </div>
                     <label class="oc-checkbox">
                         <input type="checkbox" name="marketing_opt_in" value="1" @checked(old('marketing_opt_in'))>
-                        <span>Send me offers and updates</span>
+                        <span>অফার ও আপডেট পেতে চাই</span>
                     </label>
-                    <button type="submit" class="oc-btn oc-btn-primary">Create Account</button>
+                    <button type="submit" class="oc-btn oc-btn-primary">অ্যাকাউন্ট খুলুন</button>
                 </form>
             </div>
         @endif

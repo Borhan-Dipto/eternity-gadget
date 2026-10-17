@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'Search Products')
+@section('title', 'প্রোডাক্ট খুঁজুন')
 
 @section('content')
 <style>
@@ -20,11 +20,14 @@
     .sf-page-ellipsis { padding: 0 6px; color: #999; font-weight: 700; }
 </style>
 <div class="container mt-4">
-    <h1>Search Products</h1>
+    <h1>প্রোডাক্ট খুঁজুন</h1>
     <form class="ig-search mb-4">
-        <input name="q" value="{{ $term }}" placeholder="Search entire store here ...">
-        <button type="submit">Search</button>
+        <input name="q" value="{{ $term }}" placeholder="প্রোডাক্টের নাম বা মডেল লিখুন...">
+        <button type="submit">খুঁজুন</button>
     </form>
+    @if($products->isEmpty() && filled($term))
+        <p style="text-align:center;padding:30px 10px;color:#666;">"{{ $term }}" এর জন্য কোনো প্রোডাক্ট পাওয়া যায়নি। অন্য নাম বা মডেল লিখে চেষ্টা করুন।</p>
+    @endif
     <div class="product-grid">
         @foreach($products as $product)
             @include('storefront.partials.product-card', ['product' => $product])

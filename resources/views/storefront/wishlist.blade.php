@@ -8,9 +8,9 @@
     <h1>My Wish List</h1>
 
     @if($products->isEmpty())
-        <p class="account-empty-msg">Your wish list is empty.</p>
+        <p class="account-empty-msg">আপনার উইশলিস্ট খালি।</p>
         <div class="account-actions" style="justify-content:flex-end;">
-            <a href="{{ route('home') }}" class="account-btn">View More Products</a>
+            <a href="{{ route('home') }}" class="account-btn">প্রোডাক্ট দেখুন</a>
         </div>
     @else
         <div class="product-grid" style="margin-top:20px;">

@@ -8,7 +8,7 @@
     <tr><td style="background:#111;color:#fff;padding:18px 24px;font-size:18px;font-weight:bold;">{{ setting('site_name', 'Eternity Gadget') }}</td></tr>
     <tr><td style="padding:24px;">
         <p style="margin:0 0 8px;font-size:16px;">প্রিয় {{ $order->customer_name }},</p>
-        <p style="margin:0 0 16px;line-height:1.6;">আপনার অর্ডার আমরা পেয়েছি। শিগগিরই ফোন করে কনফার্ম করা হবে।<br>Thank you, your order has been received.</p>
+        <p style="margin:0 0 16px;line-height:1.6;">আপনার অর্ডার আমরা পেয়েছি। শিগগিরই ফোন করে কনফার্ম করা হবে।</p>
 
         <p style="margin:0 0 4px;"><strong>অর্ডার নম্বর:</strong> {{ $order->order_number }}</p>
         <p style="margin:0 0 16px;"><strong>পেমেন্ট:</strong> {{ $order->payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি' : $order->payment_method }}</p>

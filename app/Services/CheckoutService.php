@@ -74,7 +74,7 @@ class CheckoutService
 
         if (! User::isValidBangladeshMobile($normalized)) {
             throw ValidationException::withMessages([
-                'customer_phone' => 'Enter a valid Bangladesh mobile number (11 digits after +88).',
+                'customer_phone' => 'সঠিক মোবাইল নম্বর লিখুন (১১ সংখ্যার, যেমন 01XXXXXXXXX)।',
             ]);
         }
 
@@ -118,12 +118,12 @@ class CheckoutService
 
         $cartItems = $this->cartService->getItems();
         if ($cartItems->isEmpty()) {
-            throw ValidationException::withMessages(['checkout' => 'Cart is empty.']);
+            throw ValidationException::withMessages(['checkout' => 'আপনার কার্ট খালি।']);
         }
 
         if ($idempotencyKey !== session('checkout_idempotency_key')) {
             throw ValidationException::withMessages([
-                'checkout' => 'This checkout session has expired. Please review your cart and try again.',
+                'checkout' => 'সময় শেষ হয়ে গেছে। কার্ট দেখে আবার অর্ডার করুন।',
             ]);
         }
 
@@ -201,8 +201,8 @@ class CheckoutService
             $this->notificationService->notify(
                 Auth::user(),
                 'order_placed',
-                'Order placed',
-                'Your order ' . $order->order_number . ' has been placed successfully.',
+                'অর্ডার সম্পন্ন হয়েছে',
+                'আপনার অর্ডার ' . $order->order_number . ' সফলভাবে গ্রহণ করা হয়েছে।',
                 ['order_id' => $order->id]
             );
             $this->notificationService->sendOrderEmail($order);
