@@ -231,7 +231,7 @@
         .pd-sticky-name { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pd-sticky-price strong { font-size: 17px; color: #c0392b; }
         .pd-sticky-wa { width: 44px; height: 44px; border-radius: 10px; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .pd-sticky-btn { flex-shrink: 0; height: 44px; padding: 0 22px; border: 0; border-radius: 10px; background: #1a5c32; color: #fff; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; }
+        .pd-sticky-btn { flex-shrink: 0; height: 44px; padding: 0 22px; border: 0; border-radius: 10px; background: var(--brand); color: #fff; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; }
         body.page-product .chat-widget { display: none; } /* the sticky bar has WhatsApp; avoids a button covering the page */
         body.page-product { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
     }
@@ -370,7 +370,7 @@
         justify-content: center;
         gap: 8px;
         width: 100%;
-        background: #1a5c32;
+        background: var(--brand);
         color: #fff;
         border: 0;
         padding: 14px 18px;
@@ -380,7 +380,7 @@
         line-height: 1.2;
     }
 
-    .pd-btn-order:hover { background: #144726; }
+    .pd-btn-order:hover { background: var(--brand-dark); }
 
     .pd-btn-cart {
         display: flex;

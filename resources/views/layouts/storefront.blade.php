@@ -38,7 +38,7 @@
 
     <link rel="manifest" href="{{ asset('manifest.json') }}">
 
-    <meta name="theme-color" content="{{ setting('accent_color', '#83B735') }}">
+    <meta name="theme-color" content="#ffffff">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -113,7 +113,10 @@
 
         :root {
 
-            --link-hover-color: {{ setting('accent_color', '#83B735') }};
+            /* Brand colour from the logo; buttons that lead to an order use it everywhere */
+            --brand: #F1592A;
+            --brand-dark: #D8461A;
+            --link-hover-color: {{ setting('accent_color', '#F1592A') }};
 
             --button-bg-color: {{ setting('button_color', '#000000') }};
 
@@ -187,7 +190,7 @@
 
         .ig-header a, .ig-header .btn-link { color: #1d1d1f; text-decoration: none; }
 
-        .ig-header a:hover { color: var(--link-hover-color, #83B735); }
+        .ig-header a:hover { color: var(--link-hover-color, #F1592A); }
 
         .ig-top { display: none; }
 
@@ -272,8 +275,8 @@
         .ig-menu > li.active > a,
         .ig-menu > li:hover > a,
         .ig-menu-more:hover > .ig-menu-more-btn {
-            border-bottom-color: var(--link-hover-color, #83B735);
-            color: var(--link-hover-color, #83B735);
+            border-bottom-color: var(--link-hover-color, #F1592A);
+            color: var(--link-hover-color, #F1592A);
         }
 
         .menu-chevron { font-size: 10px; opacity: .85; }
@@ -437,7 +440,7 @@
 
         .header-icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-        .header-icon-btn:hover { color: var(--link-hover-color, #83B735) !important; }
+        .header-icon-btn:hover { color: var(--link-hover-color, #F1592A) !important; }
 
         .header-badge {
             position: absolute;
@@ -638,12 +641,12 @@
         .mini-cart-btn-cart:hover { background: #f8f8f8; color: #111 !important; }
 
         .mini-cart-btn-checkout {
-            background: #1a5c32;
+            background: var(--brand);
             color: #fff !important;
             border: 0;
         }
 
-        .mini-cart-btn-checkout:hover { background: #144726; color: #fff !important; }
+        .mini-cart-btn-checkout:hover { background: var(--brand-dark); color: #fff !important; }
 
         .notification-bell { position:relative; cursor:pointer; }
 
@@ -739,7 +742,7 @@
         }
 
         .hero-carousel-dot.active {
-            background: var(--link-hover-color, #83B735);
+            background: var(--link-hover-color, #F1592A);
             transform: scale(1.15);
         }
 
@@ -968,7 +971,7 @@
         .btn-order-now {
             display: block;
             width: 100%;
-            background: #1a5c32;
+            background: var(--brand);
             color: #fff;
             border: 0;
             padding: 10px 16px;
@@ -979,7 +982,7 @@
             transition: background .2s;
         }
 
-        .btn-order-now:hover { background: #144726; }
+        .btn-order-now:hover { background: var(--brand-dark); }
 
         @keyframes orderNowPulse {
             0%, 100% { transform: scale(1); }
@@ -1027,26 +1030,31 @@
             .section-title a { font-size: 13px; }
         }
 
-        footer { margin-top: 50px; padding: 42px 0 20px; background: {{ setting('footer_background', '#000000') }}; color: #fff; }
+        /* Light footer, same feel as the glass header; the logo stays readable */
+        footer { margin-top: 50px; padding: 42px 0 20px; background: #f6f6f7; color: #444; border-top: 1px solid #ececec; }
 
-        footer a { color: #fff; text-decoration: none; }
+        footer a { color: #333; text-decoration: none; }
 
-        footer a:hover { color: var(--link-hover-color, #83B735); }
+        footer a:hover { color: var(--brand); }
 
         footer h4 {
-            font-size: 18px;
-            margin-bottom: 18px;
-            font-weight: 400;
-            color: #fff !important;
+            font-size: 17px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: #111 !important;
         }
 
-        footer .footer-about { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; opacity: .9; }
+        footer .footer-about { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: #555; }
+
+        footer .footer-contact { margin-top: 12px; font-size: 14px; line-height: 1.9; }
 
         footer .list-unstyled li { margin-bottom: 8px; }
 
         .footer-copyright {
-            opacity: .8;
-            font-size: 14px;
+            font-size: 13px;
+            color: #777;
+            background: transparent !important;
+            text-align: center;
         }
 
         @media (max-width: 767px) {
@@ -1063,9 +1071,9 @@
             justify-content: center;
             width: 36px;
             height: 36px;
-            border: 1px solid rgba(255,255,255,.6);
+            border: 1px solid #d5d5d5;
             border-radius: 50%;
-            color: #fff;
+            color: #333;
             transition: border-color .2s, color .2s;
         }
 
@@ -1083,7 +1091,7 @@
             margin: 0 0 12px;
             border: 0;
             background: transparent;
-            color: #fff;
+            color: #111;
             cursor: pointer;
             font-family: inherit;
             text-align: left;
@@ -1327,7 +1335,7 @@
         }
 
         .mobile-nav-list a:hover,
-        .mobile-sub-toggle:hover { color: var(--link-hover-color, #83B735); }
+        .mobile-sub-toggle:hover { color: var(--link-hover-color, #F1592A); }
 
         .mobile-sub-list {
             list-style: none;
@@ -1495,7 +1503,9 @@
 
             footer { margin-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
 
-            .chat-widget { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+            .chat-widget { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 12px; }
+            .chat-trigger-btn { width: 46px; height: 46px; opacity: .92; }
+            .chat-trigger-btn svg { width: 22px; height: 22px; }
         }
 
         @media (min-width: 768px) and (max-width: 1199px) {
@@ -1789,6 +1799,10 @@
                 <img src="{{ media_url(setting('footer_logo', setting('logo'))) }}" alt="{{ setting('site_name') }}" style="max-width: 180px; margin-bottom: 16px;">
 
                 <p class="footer-about">{{ setting('footer_about', 'Welcome to our online store! We are a team of passionate individuals who are dedicated to providing our customers with high-quality products and excellent service.') }}</p>
+                <div class="footer-contact">
+                    @if(setting('phone'))<div>📞 <a href="tel:{{ preg_replace('/[^0-9+]/', '', setting('phone')) }}">{{ setting('phone') }}</a></div>@endif
+                    @if(whatsapp_link())<div>💬 <a href="{{ whatsapp_link() }}" target="_blank" rel="noopener">WhatsApp-এ মেসেজ করুন</a></div>@endif
+                </div>
 
                 <div class="footer-social">
 
@@ -1864,11 +1878,7 @@
 
                 <ul class="list-unstyled">
 
-                    <li><a href="{{ route('sitemap') }}">Site Map</a></li>
-
                     <li><a href="{{ route('wishlist') }}">Wish List</a></li>
-
-                    <li><a href="{{ route('search') }}">Brands</a></li>
 
                     <li><a href="{{ route('account.guest-tracking') }}">Order Tracking</a></li>
 
@@ -1884,7 +1894,7 @@
 
         </div>
 
-        <hr style="border-color: rgba(255,255,255,.15); margin-top: 30px;">
+        <hr style="border-color: #e2e2e2; margin-top: 30px;">
 
         <p class="footer-copyright mb-0">{{ setting('copyright_text', setting('site_name', 'Eternity Gadget') . ' © ' . date('Y')) }}</p>
 

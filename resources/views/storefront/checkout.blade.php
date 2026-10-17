@@ -206,7 +206,7 @@
 
     .co-btn-submit {
         width: 100%;
-        background: #e57339;
+        background: var(--brand);
         color: #fff;
         border: 0;
         border-radius: 4px;
@@ -217,7 +217,7 @@
         transition: background .15s;
     }
 
-    .co-btn-submit:hover { background: #d4652e; }
+    .co-btn-submit:hover { background: var(--brand-dark); }
 
     .co-order-box {
         border: 1px solid #e0e0e0;

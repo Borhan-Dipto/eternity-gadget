@@ -246,11 +246,11 @@
     .cs-btn-view:hover { background: #f8f8f8; color: #111; }
 
     .cs-btn-checkout {
-        background: #111;
+        background: var(--brand);
         color: #fff;
     }
 
-    .cs-btn-checkout:hover { background: #333; color: #fff; }
+    .cs-btn-checkout:hover { background: var(--brand-dark); color: #fff; }
 
     body.cart-sidebar-open { overflow: hidden; }
 

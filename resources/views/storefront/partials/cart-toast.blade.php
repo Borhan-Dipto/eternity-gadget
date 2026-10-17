@@ -76,7 +76,7 @@
     }
 
     .cart-toast-btn-checkout {
-        background: #111;
+        background: var(--brand);
         color: #fff;
     }
 

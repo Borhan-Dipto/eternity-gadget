@@ -188,11 +188,11 @@
     }
 
     .oc-btn-primary {
-        background: #1a5c32;
+        background: var(--brand);
         color: #fff !important;
     }
 
-    .oc-btn-primary:hover { background: #144726; }
+    .oc-btn-primary:hover { background: var(--brand-dark); }
 
     .oc-btn-secondary {
         background: #fff;

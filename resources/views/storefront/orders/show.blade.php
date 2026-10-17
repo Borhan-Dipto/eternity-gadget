@@ -55,7 +55,7 @@
     .od-info p { margin: 0 0 6px; font-size: 14px; color: #444; line-height: 1.5; }
     .od-info strong { color: #111; }
     .od-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 18px; }
-    .order-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 18px; border: 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff !important; background: #1a5c32; }
+    .order-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 18px; border: 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff !important; background: var(--brand); }
     .order-btn-secondary { background: #fff; color: #111 !important; border: 1px solid #d9d9d9; }
     .order-btn-danger { background: #c0392b; }
     .order-btn-wa { background: #25D366; }
