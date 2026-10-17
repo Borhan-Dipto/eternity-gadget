@@ -34,9 +34,23 @@ class ImagesRelationManager extends RelationManager
                 ->visibility('public')
                 ->required()
                 ->columnSpanFull(),
+            \Filament\Forms\Components\Select::make('option_ids')
+                ->label('This photo shows (optional)')
+                ->helperText('Pick the colour and/or model in this photo, e.g. "Black" + "iPhone 17 Pro". When a customer chooses that, this photo comes up.')
+                ->multiple()
+                ->options(fn () => self::optionLabels($this->getOwnerRecord()))
+                ->columnSpanFull(),
             TextInput::make('alt_text')->label('Image Alt Text'),
             Toggle::make('is_primary')->label('Main Product Image')->default(false),
         ]);
+    }
+
+    /** @return array<int, string> option id => "Model: iPhone 17 Pro" / "Color: Black" */
+    public static function optionLabels($product): array
+    {
+        return $product->options()->with('deviceModel')->orderBy('sort_order')->get()
+            ->mapWithKeys(fn ($o) => [$o->id => ($o->device_model_id ? 'Model' : $o->name) . ': ' . ($o->deviceModel?->name ?? $o->value)])
+            ->all();
     }
 
     public function table(Table $table): Table
@@ -45,6 +59,9 @@ class ImagesRelationManager extends RelationManager
             ->recordTitleAttribute('alt_text')
             ->columns([
                 ImageColumn::make('image')->disk('public'),
+                TextColumn::make('option_ids')->label('Shows')
+                    ->state(fn (ProductImage $record) => collect($record->option_ids ?? [])->map(fn ($id) => self::optionLabels($this->getOwnerRecord())[$id] ?? null)->filter()->implode(', '))
+                    ->placeholder('All options')->wrap(),
                 TextColumn::make('alt_text')->placeholder('—'),
                 TextColumn::make('sort_order')->sortable()->label('Order'),
                 IconColumn::make('is_primary')->boolean()->label('Main'),

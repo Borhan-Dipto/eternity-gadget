@@ -11,7 +11,9 @@ class ProductImage extends Model
 {
     use NormalizesMediaPath;
 
-    protected $fillable = ['product_id', 'image', 'alt_text', 'sort_order', 'is_primary'];
+    protected $fillable = ['product_id', 'image', 'alt_text', 'sort_order', 'is_primary', 'option_ids'];
+
+    protected $casts = ['option_ids' => 'array'];
 
     protected static function booted(): void
     {

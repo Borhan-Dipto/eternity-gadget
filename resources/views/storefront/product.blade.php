@@ -21,8 +21,28 @@
         'preorder' => __('messages.preorder'),
         'backorder' => __('messages.backorder'),
     ];
-    $galleryImages = $product->images->isNotEmpty() ? $product->images : collect([(object)['image' => $product->primaryImage(), 'alt_text' => $product->name]]);
+    $galleryImages = $product->images->isNotEmpty() ? $product->images->values() : collect([(object)['image' => $product->primaryImage(), 'alt_text' => $product->name, 'option_ids' => []]]);
+    // Photos added on a colour / model row join the gallery, so customers can browse every version
+    $galleryPaths = $galleryImages->pluck('image')->all();
+    foreach ($product->options->sortBy('sort_order') as $opt) {
+        if ($opt->image && ! in_array($opt->image, $galleryPaths, true)) {
+            $galleryImages->push((object) ['image' => $opt->image, 'alt_text' => $product->name . ' — ' . ($opt->deviceModel?->name ?? $opt->value), 'option_ids' => [$opt->id]]);
+            $galleryPaths[] = $opt->image;
+        } elseif ($opt->image) {
+            // same file already in the gallery: tag that photo with this option too
+            $galleryImages = $galleryImages->map(function ($img) use ($opt) {
+                if ($img->image === $opt->image) {
+                    $ids = (array) ($img->option_ids ?? []);
+                    $ids[] = $opt->id;
+                    $img = (object) ['image' => $img->image, 'alt_text' => $img->alt_text, 'option_ids' => array_values(array_unique($ids))];
+                }
+                return $img;
+            });
+        }
+    }
     $galleryUrls = $galleryImages->map(fn ($img) => media_thumb($img->image, 1000))->values();
+    // index => option ids that photo shows (used to jump to the right photo when a choice is made)
+    $galleryOptionTags = $galleryImages->map(fn ($img) => array_map('intval', (array) ($img->option_ids ?? [])))->values();
     $optionGroups = ProductOptionGroups::storefrontGroups($product->options);
 
     $defaultOptionIds = $optionGroups
@@ -1033,6 +1053,7 @@
 <script>
 (function () {
     const images = @json($galleryUrls);
+    const imageTags = @json($galleryOptionTags);
     let current = 0;
     const main = document.getElementById('pd-gallery-main');
     const stage = document.getElementById('pd-gallery-stage');
@@ -1056,6 +1077,21 @@
     thumbs.forEach((thumb) => {
         thumb.addEventListener('click', () => showImage(parseInt(thumb.dataset.index, 10)));
     });
+
+    // Show the photo that best matches the chosen colour / model:
+    // a photo qualifies when every option it is tagged with is chosen; the most specific one wins.
+    window.pdShowImageForOptions = function (selectedIds) {
+        const chosen = new Set(selectedIds.map(Number));
+        let best = -1, bestScore = 0;
+        imageTags.forEach((tags, i) => {
+            if (!tags.length || !tags.every((id) => chosen.has(id))) return;
+            if (tags.length > bestScore) { best = i; bestScore = tags.length; }
+        });
+        if (best >= 0 && best !== current) {
+            showImage(best);
+            thumbs[best]?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        }
+    };
 
     main?.addEventListener('click', () => {
         if (!lightbox || !lightboxImg) return;
@@ -1170,6 +1206,11 @@
 
     document.querySelectorAll('#pd-product-form input[type="radio"]').forEach((input) => {
         input.addEventListener('change', syncSelectedOptionState);
+        // the customer picked a colour / model → bring up its photo (not on page load: the main photo stays first)
+        input.addEventListener('change', () => {
+            const ids = Array.from(document.querySelectorAll('#pd-product-form input[type="radio"]:checked')).map((i) => i.value);
+            window.pdShowImageForOptions?.(ids);
+        });
     });
 
     syncSelectedOptionState();

@@ -26,10 +26,17 @@ class ProductForm
         return $schema->components([
             FileUpload::make('product_images')
                 ->label('Product Images')
-                ->helperText('Upload one or more images. The first image is the main image shown in listings. Drag to reorder gallery images on the product page.')
+                ->helperText('Add as many photos as you like (up to 10 MB each). Big phone photos are shrunk automatically before upload. The first photo is the main one; drag to reorder. To show a photo when a customer picks a colour/model, add it on that colour/model row below, or tag it under "Images" after saving.')
                 ->image()
                 ->multiple()
                 ->reorderable()
+                ->appendFiles()
+                ->panelLayout('grid')
+                ->maxSize(10240)
+                ->imageResizeMode('contain')
+                ->imageResizeTargetWidth('1600')
+                ->imageResizeTargetHeight('1600')
+                ->imageResizeUpscale(false)
                 ->disk('public')
                 ->directory('products')
                 ->visibility('public')
@@ -120,6 +127,7 @@ class ProductForm
     private static function deviceOptionSchema(): array
     {
         return [
+            self::optionImageField(),
             TextInput::make('value')
                 ->label('Device Label')
                 ->required()
@@ -195,6 +203,7 @@ class ProductForm
     private static function colorOptionSchema(): array
     {
         return [
+            self::optionImageField(),
             TextInput::make('value')
                 ->label('Color Name')
                 ->required()
@@ -229,6 +238,7 @@ class ProductForm
     private static function variantOptionSchema(): array
     {
         return [
+            self::optionImageField(),
             TextInput::make('name')
                 ->label('Variant Group')
                 ->required()
@@ -254,5 +264,22 @@ class ProductForm
                 ->maxValue(4294967295)
                 ->default(0),
         ];
+    }
+
+    private static function optionImageField(): FileUpload
+    {
+        return FileUpload::make('image')
+            ->label('Photo when chosen (optional)')
+            ->helperText('This photo comes up when the customer picks this option.')
+            ->image()
+            ->disk('public')
+            ->directory('products/options')
+            ->visibility('public')
+            ->maxSize(10240)
+            ->imageResizeMode('contain')
+            ->imageResizeTargetWidth('1600')
+            ->imageResizeTargetHeight('1600')
+            ->imageResizeUpscale(false)
+            ->columnSpanFull();
     }
 }

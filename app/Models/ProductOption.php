@@ -16,6 +16,7 @@ class ProductOption extends Model
         'price_adjustment',
         'stock',
         'sort_order',
+        'image',
     ];
 
     public const GROUP_COLOR = 'Color';
