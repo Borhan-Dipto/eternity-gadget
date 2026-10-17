@@ -23,12 +23,12 @@
         display: flex;
         flex-direction: column;
         transform: translateX(100%);
-        transition: transform .3s ease;
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+        transition: transform .3s ease, box-shadow .3s ease;
+        box-shadow: none;
         font-family: var(--font-sans);
     }
 
-    .cart-sidebar.open { transform: translateX(0); }
+    .cart-sidebar.open { transform: translateX(0); box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12); }
 
     .cs-header {
         display: flex;
