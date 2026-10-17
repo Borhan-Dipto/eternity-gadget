@@ -11,7 +11,8 @@
     ];
     $stepKeys = array_keys($steps);
     $isCancelled = $order->status === \App\Models\Order::STATUS_CANCELLED;
-    $currentStep = array_search($order->status, $stepKeys, true);
+    $timelineStatus = ['confirmed' => 'processing', 'completed' => 'delivered'][$order->status] ?? $order->status;
+    $currentStep = array_search($timelineStatus, $stepKeys, true);
     $currentStep = $currentStep === false ? 0 : $currentStep;
     $shippingNames = [
         'inside_dhaka' => 'ঢাকা শহরের ভিতরে', 'standard' => 'ঢাকা শহরের ভিতরে',

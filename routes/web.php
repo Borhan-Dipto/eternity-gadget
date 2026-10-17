@@ -89,10 +89,12 @@ Route::prefix('account')->name('account.')->group(function () {
             Route::post('/logout-all', 'logoutAllDevices')->name('logout-all');
 
             Route::get('/orders', 'orderHistory')->name('orders');
-            Route::get('/downloads', 'downloads')->name('downloads');
-            Route::get('/recurring-payments', 'recurringPayments')->name('recurring');
             Route::get('/reward-points', 'rewardPoints')->name('rewards');
-            Route::get('/transactions', 'transactions')->name('transactions');
+            // Old pages that did not apply to this shop (no downloads, no card payments): send to the account page
+            Route::redirect('/downloads', '/account', 301);
+            Route::redirect('/recurring-payments', '/account', 301);
+            Route::redirect('/transactions', '/account', 301);
+            Route::redirect('/payment-methods', '/account', 301);
             Route::get('/newsletter', 'newsletterSettings')->name('newsletter');
             Route::post('/newsletter', 'updateNewsletterSettings')->name('newsletter.update');
 
@@ -101,11 +103,6 @@ Route::prefix('account')->name('account.')->group(function () {
             Route::put('/addresses/{address}', 'updateAddress')->name('addresses.update');
             Route::delete('/addresses/{address}', 'destroyAddress')->name('addresses.destroy');
             Route::post('/addresses/{address}/default', 'setDefaultAddress')->name('addresses.default');
-
-            Route::get('/payment-methods', 'paymentMethods')->name('payment-methods');
-            Route::post('/payment-methods', 'storePaymentMethod')->name('payment-methods.store');
-            Route::delete('/payment-methods/{paymentMethod}', 'destroyPaymentMethod')->name('payment-methods.destroy');
-            Route::post('/payment-methods/{paymentMethod}/default', 'setDefaultPaymentMethod')->name('payment-methods.default');
 
             Route::get('/notifications', 'notifications')->name('notifications');
             Route::post('/notifications/{notification}/read', 'markNotificationRead')->name('notifications.read');

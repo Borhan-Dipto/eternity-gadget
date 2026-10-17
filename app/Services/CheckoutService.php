@@ -23,10 +23,29 @@ class CheckoutService
         private CouponService $couponService,
         private PhoneService $phoneService,
         private NotificationService $notificationService,
+        private RewardService $rewardService,
     ) {}
+
+    /** Order amount (products) from which delivery is free. 0 = no free delivery. */
+    public function freeDeliveryMinimum(): float
+    {
+        return max(0, (float) setting('free_delivery_min', '0'));
+    }
+
+    public function qualifiesForFreeDelivery(float $subtotal): bool
+    {
+        $min = $this->freeDeliveryMinimum();
+
+        return $min > 0 && $subtotal >= $min;
+    }
 
     public function calculateShipping(Collection $cartItems, ?string $shippingMethodCode = null): float
     {
+        $subtotal = (float) $cartItems->sum(fn (array $item) => $item['line_total']);
+        if ($this->qualifiesForFreeDelivery($subtotal)) {
+            return 0.0;
+        }
+
         if ($shippingMethodCode) {
             $method = ShippingMethod::query()
                 ->where('code', $shippingMethodCode)
@@ -142,12 +161,15 @@ class CheckoutService
             $subtotal = (float) $cartItems->sum(fn (array $item) => $item['line_total']);
             $couponResult = $this->applyCoupon($data['coupon_code'] ?? null, $subtotal);
             $discount = $couponResult['discount'];
+            $user = Auth::user();
+            $pointsUsed = ! empty($data['use_points']) ? $this->rewardService->redeemablePoints($user, max(0, $subtotal - $discount)) : 0;
+            $rewardDiscount = $this->rewardService->discountFor($pointsUsed);
             $shipping = $this->calculateShipping($cartItems, $data['shipping_method'] ?? null);
-            $tax = $this->calculateTax($subtotal, $discount);
-            $total = max(0, $subtotal - $discount + $shipping + $tax);
+            $tax = $this->calculateTax($subtotal, $discount + $rewardDiscount);
+            $total = max(0, $subtotal - $discount - $rewardDiscount + $shipping + $tax);
             $delivery = $this->estimateDelivery($data['shipping_method'] ?? null);
 
-            $order = DB::transaction(function () use ($data, $cartItems, $subtotal, $discount, $shipping, $tax, $total, $couponResult, $delivery) {
+            $order = DB::transaction(function () use ($data, $cartItems, $subtotal, $discount, $shipping, $tax, $total, $couponResult, $delivery, $user, $pointsUsed, $rewardDiscount) {
                 $order = Order::create([
                     'customer_name' => $data['customer_name'],
                     'customer_email' => $data['customer_email'] ?? null,
@@ -163,6 +185,8 @@ class CheckoutService
                     ...AdSource::forOrder(request()),
                     'subtotal' => $subtotal,
                     'discount' => $discount,
+                    'reward_points_used' => $pointsUsed,
+                    'reward_discount' => $rewardDiscount,
                     'coupon_code' => $couponResult['coupon']?->code,
                     'shipping_cost' => $shipping,
                     'tax_amount' => $tax,
@@ -187,6 +211,10 @@ class CheckoutService
                     $this->couponService->incrementUsage($couponResult['coupon']);
                 }
 
+                if ($pointsUsed > 0 && $user) {
+                    $this->rewardService->redeemForOrder($order, $user, $pointsUsed);
+                }
+
                 return $order;
             });
 
@@ -209,7 +237,7 @@ class CheckoutService
             NewOrderAlertJob::dispatch($order->id)->afterResponse();
             $this->notificationService->sendSms(
                 $order->customer_phone,
-                'Your Eternity Gadget order ' . $order->order_number . ' has been received. Total: ' . money_bd($order->total)
+                'Eternity Gadget: আপনার অর্ডার ' . $order->order_number . ' গ্রহণ করা হয়েছে। মোট: ' . money_bd($order->total)
             );
 
             return $order;
@@ -239,7 +267,7 @@ class CheckoutService
 
             if ($item['quantity'] > $option->stock) {
                 throw ValidationException::withMessages([
-                    'quantity' => 'Not enough stock for ' . $item['product']->name . '.',
+                    'quantity' => $item['product']->name . ' — এই পরিমাণ স্টকে নেই।',
                 ]);
             }
 
@@ -252,7 +280,7 @@ class CheckoutService
 
         if ($item['quantity'] > $product->stock) {
             throw ValidationException::withMessages([
-                'quantity' => 'Not enough stock for ' . $item['product']->name . '.',
+                'quantity' => $item['product']->name . ' — এই পরিমাণ স্টকে নেই।',
             ]);
         }
 

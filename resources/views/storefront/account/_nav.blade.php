@@ -9,14 +9,11 @@
         <li><a href="{{ route('account.addresses') }}">Address Book</a></li>
         <li><a href="{{ route('wishlist') }}">Wish List</a></li>
         <li><a href="{{ route('account.orders') }}">Order History</a></li>
-        <li><a href="{{ route('account.guest-tracking') }}">Guest Order Tracking</a></li>
-        <li><a href="{{ route('account.downloads') }}">Downloads</a></li>
+        <li><a href="{{ route('account.guest-tracking') }}">Track Order</a></li>
         <li><a href="{{ route('account.rewards') }}">Reward Points</a></li>
-        <li><a href="{{ route('account.transactions') }}">Transactions</a></li>
         <li><a href="{{ route('account.newsletter') }}">Newsletter</a></li>
         @auth
             <li><a href="{{ route('account.profile') }}">Edit Profile</a></li>
-            <li><a href="{{ route('account.payment-methods') }}">Payment Methods</a></li>
             <li><a href="{{ route('account.notifications') }}">Notifications</a></li>
             <li><a href="{{ route('compare') }}">Compare Products</a></li>
         @endauth

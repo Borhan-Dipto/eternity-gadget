@@ -50,22 +50,18 @@
         <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
         Order History
     </a>
+@guest
     <a href="{{ route('account.guest-tracking') }}" class="account-sidebar-item{{ $active === 'guest-tracking' ? ' active' : '' }}">
         <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 000 5z"/></svg>
-        Guest Order Tracking
+        Track Order
     </a>
-    <a href="{{ route('account.downloads') }}" class="account-sidebar-item{{ $active === 'downloads' ? ' active' : '' }}">
-        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-        Downloads
-    </a>
+@endguest
+@if(setting('rewards_enabled', '1') === '1')
     <a href="{{ route('account.rewards') }}" class="account-sidebar-item{{ $active === 'rewards' ? ' active' : '' }}">
         <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
         Reward Points
     </a>
-    <a href="{{ route('account.transactions') }}" class="account-sidebar-item{{ $active === 'transactions' ? ' active' : '' }}">
-        <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
-        Transactions
-    </a>
+@endif
     <a href="{{ route('account.newsletter') }}" class="account-sidebar-item{{ $active === 'newsletter' ? ' active' : '' }}">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
         Newsletter

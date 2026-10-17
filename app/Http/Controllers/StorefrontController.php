@@ -129,13 +129,24 @@ class StorefrontController extends Controller
         $subtotal = (float) $cartItems->sum(fn (array $item) => $item['line_total']);
         $cartWeight = (float) $cartItems->sum(fn (array $item) => (float) ($item['product']->weight ?? 0) * $item['quantity']);
         // Exact cost per method (same formula the order uses), so the page never shows a different price than is charged.
-        $shippingCosts = $shippingMethods->mapWithKeys(fn (ShippingMethod $method) => [$method->code => $method->calculateCost($cartWeight)])->all();
+        $freeDelivery = $this->checkoutService->qualifiesForFreeDelivery($subtotal);
+        $shippingCosts = $shippingMethods->mapWithKeys(fn (ShippingMethod $method) => [$method->code => $freeDelivery ? 0.0 : $method->calculateCost($cartWeight)])->all();
+        $freeDeliveryMin = $this->checkoutService->freeDeliveryMinimum();
         // No delivery area is pre-selected: the customer must choose, so nobody is silently charged the wrong rate.
         $selectedShipping = $shippingMethods->firstWhere('code', old('shipping_method'));
         $defaultShipping = $selectedShipping ?? $shippingMethods->sortByDesc('base_cost')->first();
         $shippingEstimate = $selectedShipping ? (float) $shippingCosts[$selectedShipping->code] : 0.0;
         $taxEstimate = $this->checkoutService->calculateTax($subtotal);
         $deliveryEstimate = $this->checkoutService->estimateDelivery($defaultShipping?->code);
+        $rewards = app(\App\Services\RewardService::class);
+        $reward = [
+            'enabled' => $rewards->enabled(),
+            'balance' => $rewards->balance(auth()->user()),
+            'redeemable' => $rewards->redeemablePoints(auth()->user(), $subtotal),
+            'earn' => $rewards->pointsForAmount($subtotal),
+            'min' => $rewards->minRedeem(),
+        ];
+        $reward['discount'] = $rewards->discountFor($reward['redeemable']);
 
         return view('storefront.checkout', compact(
             'cartItems',
@@ -147,6 +158,9 @@ class StorefrontController extends Controller
             'shippingCosts',
             'taxEstimate',
             'deliveryEstimate',
+            'freeDelivery',
+            'freeDeliveryMin',
+            'reward',
         ));
     }
 
@@ -166,6 +180,7 @@ class StorefrontController extends Controller
             'payment_method' => ['required', 'string', Rule::in(['cod'])],
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'use_points' => ['nullable', 'boolean'],
             'terms_agreed' => ['accepted'],
         ], [
             'shipping_method.required' => 'ডেলিভারি এলাকা নির্বাচন করুন।',

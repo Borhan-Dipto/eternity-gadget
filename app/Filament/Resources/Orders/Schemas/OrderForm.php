@@ -14,13 +14,21 @@ class OrderForm
         return $schema->components([
             TextInput::make('order_number')->required(),
             Select::make('status')->options([
-                'pending' => 'Pending',
-                'confirmed' => 'Confirmed',
-                'processing' => 'Processing',
-                'shipped' => 'Shipped',
-                'completed' => 'Completed',
+                'pending' => 'Pending (new, 10-minute cancel window)',
+                'processing' => 'Processing (confirmed by phone)',
+                'shipped' => 'Shipped (handed to courier)',
+                'delivered' => 'Delivered (customer received it)',
                 'cancelled' => 'Cancelled',
+            ])->required()
+                ->helperText('The customer is notified when you change this. Delivered gives reward points; Cancelled puts the stock back.'),
+            Select::make('payment_status')->label('Payment')->options([
+                'pending' => 'Not paid yet',
+                'paid' => 'Paid',
+                'refunded' => 'Refunded',
+                'failed' => 'Failed',
             ])->required(),
+            TextInput::make('carrier')->label('Courier (e.g. Steadfast, Pathao)')->maxLength(100),
+            TextInput::make('tracking_number')->label('Courier tracking number')->maxLength(100),
             TextInput::make('customer_name')->required(),
             TextInput::make('customer_email')->email(),
             TextInput::make('customer_phone')->required(),

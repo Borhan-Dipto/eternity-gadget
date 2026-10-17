@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use App\Models\ContactMessage;
 use App\Models\Order;
-use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\UserNotification;
@@ -193,63 +192,6 @@ class AccountController extends Controller
         $address->update(['is_default' => true]);
 
         return back()->with('success', 'মূল ঠিকানা পরিবর্তন হয়েছে।');
-    }
-
-    public function paymentMethods(): View
-    {
-        return view('storefront.account.payment-methods', [
-            'paymentMethods' => Auth::user()->paymentMethods()->orderByDesc('is_default')->get(),
-        ]);
-    }
-
-    public function storePaymentMethod(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'type' => ['required', Rule::in(['cod', 'card'])],
-            'label' => ['required', 'string', 'max:255'],
-            'last_four' => ['nullable', 'string', 'size:4'],
-            'is_default' => ['sometimes', 'boolean'],
-        ]);
-
-        if ($data['is_default'] ?? false) {
-            Auth::user()->paymentMethods()->update(['is_default' => false]);
-        } elseif (! Auth::user()->paymentMethods()->exists()) {
-            $data['is_default'] = true;
-        }
-
-        PaymentMethod::create([
-            'user_id' => Auth::id(),
-            'type' => $data['type'],
-            'label' => $data['label'],
-            'provider' => $data['type'] === 'cod' ? 'cod' : 'manual',
-            'token' => $data['type'] === 'cod' ? 'cod' : 'card_' . Str::random(16),
-            'last_four' => $data['last_four'] ?? null,
-            'is_default' => (bool) ($data['is_default'] ?? false),
-        ]);
-
-        return back()->with('success', 'Payment method saved.');
-    }
-
-    public function destroyPaymentMethod(PaymentMethod $paymentMethod): RedirectResponse
-    {
-        $this->authorizePaymentMethod($paymentMethod);
-        $wasDefault = $paymentMethod->is_default;
-        $paymentMethod->delete();
-
-        if ($wasDefault) {
-            Auth::user()->paymentMethods()->first()?->update(['is_default' => true]);
-        }
-
-        return back()->with('success', 'Payment method removed.');
-    }
-
-    public function setDefaultPaymentMethod(PaymentMethod $paymentMethod): RedirectResponse
-    {
-        $this->authorizePaymentMethod($paymentMethod);
-        Auth::user()->paymentMethods()->update(['is_default' => false]);
-        $paymentMethod->update(['is_default' => true]);
-
-        return back()->with('success', 'Default payment method updated.');
     }
 
     public function showPhoneRegister(): View|RedirectResponse
@@ -642,59 +584,48 @@ class AccountController extends Controller
     {
         $data = $request->validate([
             'order_number' => ['required', 'string', 'max:50'],
-            'email' => ['required', 'email', 'max:255'],
-        ]);
+            'contact' => ['required', 'string', 'max:255'],
+        ], [], ['order_number' => 'অর্ডার নম্বর', 'contact' => 'মোবাইল নম্বর']);
 
-        $order = Order::query()
-            ->where('order_number', $data['order_number'])
-            ->where('customer_email', $data['email'])
-            ->with('items')
-            ->first();
+        $number = strtoupper(trim(ltrim(trim($data['order_number']), '#')));
+        $contact = trim($data['contact']);
+
+        $query = Order::query()->where('order_number', $number);
+        if (str_contains($contact, '@')) {
+            $query->where('customer_email', $contact);
+        } else {
+            $phone = \App\Models\User::normalizePhone($contact);
+            $query->where('customer_phone', $phone ?: '__none__');
+        }
+        $order = $query->first();
 
         if (! $order) {
-            return back()->withErrors(['order_number' => 'এই তথ্য দিয়ে কোনো অর্ডার পাওয়া যায়নি।'])->withInput();
+            return back()->withErrors(['order_number' => 'এই অর্ডার নম্বর ও মোবাইল নম্বর দিয়ে কোনো অর্ডার পাওয়া যায়নি। অর্ডার কনফার্মেশনে দেওয়া নম্বরটি দেখে আবার লিখুন।'])->withInput();
         }
 
-        session(['tracked_order' => $order->id]);
+        if ($order->user_id === null) {
+            session(['tracked_order' => $order->id]);
+        }
 
-        return redirect()->route('account.guest-tracking');
+        return redirect()->to(\Illuminate\Support\Facades\URL::temporarySignedRoute('orders.show', now()->addHours(2), ['order' => $order]));
     }
 
-    public function downloads(): View
+    public function rewardPoints(\App\Services\RewardService $rewards): View|RedirectResponse
     {
-        $orders = Auth::user()
-            ->orders()
-            ->where('payment_status', Order::PAYMENT_STATUS_PAID)
-            ->latest()
-            ->get();
+        if (! $rewards->enabled()) {
+            return redirect()->route('account');
+        }
 
-        return view('storefront.account.downloads', compact('orders'));
-    }
-
-    public function recurringPayments(): View
-    {
-        return view('storefront.account.recurring-payments');
-    }
-
-    public function rewardPoints(): View
-    {
         $user = Auth::user();
-        $points = (int) floor($user->orders()
-            ->where('status', Order::STATUS_DELIVERED)
-            ->sum('total') / 100);
 
-        return view('storefront.account.reward-points', compact('points'));
-    }
-
-    public function transactions(): View
-    {
-        $orders = Auth::user()
-            ->orders()
-            ->whereIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED])
-            ->latest()
-            ->paginate(20);
-
-        return view('storefront.account.transactions', compact('orders'));
+        return view('storefront.account.reward-points', [
+            'points' => $rewards->balance($user),
+            'pointValue' => $rewards->pointValue(),
+            'earnPer100' => $rewards->earnPer100(),
+            'minRedeem' => $rewards->minRedeem(),
+            'maxPercent' => $rewards->maxRedeemPercent(),
+            'history' => \App\Models\RewardPointTransaction::query()->where('user_id', $user->id)->with('order:id,order_number')->latest()->limit(50)->get(),
+        ]);
     }
 
     public function newsletterSettings(): View
@@ -806,11 +737,6 @@ class AccountController extends Controller
     private function authorizeAddress(Address $address): void
     {
         abort_unless($address->user_id === Auth::id(), 403);
-    }
-
-    private function authorizePaymentMethod(PaymentMethod $paymentMethod): void
-    {
-        abort_unless($paymentMethod->user_id === Auth::id(), 403);
     }
 
     private function throttleAuth(string $key, int $maxAttempts, int $decaySeconds): void

@@ -345,6 +345,11 @@
     .co-remove:hover { border-color: #999; color: #111; }
 
     .co-totals { border-top: 1px solid #eee; padding-top: 4px; }
+    .co-reward { display: flex; gap: 10px; align-items: flex-start; margin: 18px 0 4px; padding: 12px 14px; border: 1px dashed #f5924c; background: #fff8f2; border-radius: 10px; cursor: pointer; font-size: 14px; line-height: 1.5; }
+    .co-reward input { margin-top: 4px; width: 18px; height: 18px; accent-color: #1a7f45; flex-shrink: 0; }
+    .co-reward small { display: block; color: #777; font-size: 12px; }
+    .co-reward-info { cursor: default; border-style: solid; border-color: #f1e2d3; }
+    .co-free-note { margin-top: 10px; padding: 9px 12px; border-radius: 8px; background: #edf8f1; color: #1a5c32; font-size: 13px; text-align: center; }
 
     .co-total-line {
         display: flex;
@@ -456,7 +461,7 @@
                             <label class="co-radio-option">
                                 <input type="radio" name="shipping_method" value="{{ $method->code }}" data-name="{{ $methodLabel }}" data-cost="{{ $shippingCosts[$method->code] ?? $method->base_cost }}" @checked($defaultShippingCode === $method->code) @if($loop->first) required @endif>
                                 <span class="co-radio-label">{{ $methodLabel }}</span>
-                                <span class="co-radio-price">{{ money_bd($shippingCosts[$method->code] ?? $method->base_cost) }}</span>
+                                <span class="co-radio-price">@if($freeDelivery)<s style="color:#999;font-weight:400;">{{ money_bd($method->base_cost) }}</s> <b style="color:#1a7f45;">ফ্রি</b>@else{{ money_bd($shippingCosts[$method->code] ?? $method->base_cost) }}@endif</span>
                             </label>
                         @endforeach
                     </div>
@@ -470,6 +475,26 @@
                             </label>
                         @endif
                     </div>
+
+                    @if($reward['enabled'])
+                        @if($reward['redeemable'] > 0)
+                            <label class="co-reward">
+                                <input type="checkbox" name="use_points" value="1" id="use-points" data-discount="{{ $reward['discount'] }}" @checked(old('use_points'))>
+                                <span>
+                                    <strong>{{ $reward['redeemable'] }} রিওয়ার্ড পয়েন্ট ব্যবহার করে {{ money_bd($reward['discount']) }} ছাড় নিন</strong>
+                                    <small>আপনার মোট পয়েন্ট: {{ $reward['balance'] }}</small>
+                                </span>
+                            </label>
+                        @elseif($reward['earn'] > 0)
+                            <div class="co-reward co-reward-info">
+                                <span>🎁</span>
+                                <span>
+                                    এই অর্ডারটি ডেলিভারি হলে <strong>{{ $reward['earn'] }} রিওয়ার্ড পয়েন্ট</strong> পাবেন@guest — <a href="{{ route('account.login') }}">লগইন</a> বা অর্ডারের পরে অ্যাকাউন্ট খুলুন@endguest।
+                                    @auth @if($reward['balance'] > 0)<small>আপনার পয়েন্ট: {{ $reward['balance'] }} ({{ $reward['min'] }} পয়েন্ট হলে ব্যবহার করতে পারবেন)</small>@endif @endauth
+                                </span>
+                            </div>
+                        @endif
+                    @endif
 
                     <label class="co-terms">
                         <input type="checkbox" name="terms_agreed" value="1" @checked(old('terms_agreed')) required>
@@ -536,6 +561,10 @@
                             <span>{{ $co['sub_total'] }}</span>
                             <span id="summary-subtotal">{{ money_bd($subtotal) }}</span>
                         </div>
+                        <div class="co-total-line" id="summary-reward-line" hidden>
+                            <span>রিওয়ার্ড পয়েন্ট ছাড়</span>
+                            <span id="summary-reward" style="color:#1a7f45;">−{{ money_bd($reward['discount']) }}</span>
+                        </div>
                         <div class="co-total-line">
                             <span id="summary-shipping-label">{{ $defaultShippingCode ? $defaultShippingLabel : 'ডেলিভারি চার্জ' }}</span>
                             <span id="summary-shipping">{{ $defaultShippingCode ? money_bd($shippingEstimate) : 'এলাকা নির্বাচন করুন' }}</span>
@@ -550,6 +579,11 @@
                             <span>{{ $co['total'] }}</span>
                             <span id="summary-total">{{ money_bd($initialTotal) }}</span>
                         </div>
+                        @if($freeDelivery)
+                            <div class="co-free-note">🎉 আপনার অর্ডারে ডেলিভারি চার্জ ফ্রি!</div>
+                        @elseif($freeDeliveryMin > 0)
+                            <div class="co-free-note">আর মাত্র <strong>{{ money_bd($freeDeliveryMin - $subtotal) }}</strong> এর প্রোডাক্ট নিলে ডেলিভারি চার্জ ফ্রি!</div>
+                        @endif
                     </div>
                 </div>
             </aside>
@@ -563,7 +597,8 @@
     const form = document.getElementById('checkout-form');
     const submitBtn = document.getElementById('checkout-submit-btn');
     const subtotal = {{ (float) $subtotal }};
-    const taxEstimate = {{ (float) $taxEstimate }};
+    const taxRate = {{ (float) setting('tax_rate', '0') }};
+    const pointsBox = document.getElementById('use-points');
     const confirmLabel = @json($co['confirm_order']);
 
     function formatMoney(amount) {
@@ -573,7 +608,13 @@
     function updateSummary() {
         const selectedShipping = document.querySelector('input[name="shipping_method"]:checked');
         const shipping = selectedShipping ? parseFloat(selectedShipping.dataset.cost || '0') : 0;
-        const total = subtotal + shipping + taxEstimate;
+        const rewardDiscount = pointsBox && pointsBox.checked ? parseFloat(pointsBox.dataset.discount || '0') : 0;
+        const tax = Math.round(Math.max(0, subtotal - rewardDiscount) * taxRate) / 100;
+        const total = subtotal - rewardDiscount + shipping + tax;
+        const taxEl = document.getElementById('summary-tax');
+        if (taxEl) taxEl.textContent = formatMoney(tax);
+        const rewardLine = document.getElementById('summary-reward-line');
+        if (rewardLine) rewardLine.hidden = rewardDiscount <= 0;
 
         document.getElementById('summary-shipping').textContent = selectedShipping ? formatMoney(shipping) : 'এলাকা নির্বাচন করুন';
         document.getElementById('summary-total').textContent = formatMoney(total);
@@ -591,6 +632,8 @@
     document.querySelectorAll('input[name="shipping_method"]').forEach((radio) => {
         radio.addEventListener('change', updateSummary);
     });
+    pointsBox?.addEventListener('change', updateSummary);
+    updateSummary();
 
     document.querySelectorAll('.co-qty-form').forEach((qtyForm) => {
         const input = qtyForm.querySelector('.co-qty-input');

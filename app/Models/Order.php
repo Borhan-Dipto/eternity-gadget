@@ -48,6 +48,8 @@ class Order extends Model
         'status',
         'subtotal',
         'discount',
+        'reward_points_used',
+        'reward_discount',
         'coupon_code',
         'shipping_cost',
         'tax_amount',
@@ -69,6 +71,16 @@ class Order extends Model
         'user_agent',
     ];
 
+    protected static function booted(): void
+    {
+        // Reward points follow the order status (earn on delivery, give back on cancel).
+        static::updated(function (self $order) {
+            if ($order->wasChanged('status')) {
+                app(\App\Services\RewardService::class)->syncOrder($order);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -76,6 +88,8 @@ class Order extends Model
             'discount' => 'decimal:2',
             'shipping_cost' => 'decimal:2',
             'tax_amount' => 'decimal:2',
+            'reward_discount' => 'decimal:2',
+            'reward_points_used' => 'integer',
             'total' => 'decimal:2',
             'estimated_delivery' => 'date',
             'delivered_at' => 'datetime',
@@ -199,6 +213,9 @@ class Order extends Model
             self::STATUS_SHIPPED => 'কুরিয়ারে পাঠানো হয়েছে',
             self::STATUS_DELIVERED => 'ডেলিভারি সম্পন্ন',
             self::STATUS_CANCELLED => 'বাতিল',
+            // older statuses that the previous admin form allowed
+            'confirmed' => 'প্রসেস করা হচ্ছে',
+            'completed' => 'ডেলিভারি সম্পন্ন',
         ];
     }
 

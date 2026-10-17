@@ -25,6 +25,8 @@ class SiteSettingForm
                     'tracking' => 'Tracking & Pixels',
                     'notifications' => 'Order Alerts',
                     'checkout' => 'Checkout',
+                    'rewards' => 'Reward Points',
+                    'delivery' => 'Delivery & Returns',
                     'general' => 'General',
                 ])
                 ->required(),

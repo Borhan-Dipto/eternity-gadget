@@ -216,6 +216,7 @@
         font-weight: 700;
     }
 
+    .pd-reward-note { display: inline-block; margin: 0 0 12px; padding: 6px 12px; border-radius: 999px; background: #fff4ec; color: #8a4b1f; font-size: 13px; }
     .pd-meta {
         font-size: 14px;
         color: #333;
@@ -765,6 +766,10 @@
                 <span class="pd-save-badge" id="pd-save-badge" @if(!$hasSale || $savings <= 0) hidden @endif>{{ money_bd($savings) }} সাশ্রয় ({{ $savingsPercent }}%)</span>
             </div>
 
+            @php $pdPoints = app(\App\Services\RewardService::class)->pointsForAmount((float) $displayPrice); @endphp
+            @if($pdPoints > 0)
+                <p class="pd-reward-note">🎁 এটি কিনলে <strong>{{ $pdPoints }} রিওয়ার্ড পয়েন্ট</strong> পাবেন</p>
+            @endif
             <p class="pd-meta"><strong>প্রোডাক্ট কোড:</strong> {{ $product->sku ?: 'N/A' }}</p>
             <p class="pd-meta">
                 <strong>স্টক:</strong>

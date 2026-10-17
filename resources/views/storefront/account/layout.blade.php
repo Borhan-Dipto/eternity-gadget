@@ -221,7 +221,9 @@
     .account-section-title { font-size: 16px; font-weight: 700; margin: 24px 0 12px; text-transform: uppercase; letter-spacing: .3px; }
 
     @media (max-width: 991px) {
-        .account-page-row { flex-direction: column-reverse; }
+        .account-page-row { flex-direction: column; } /* page content first, menu below it */
+        .account-main { width: 100%; }
+        .account-page-row--dashboard .account-sidebar { display: none; } /* dashboard tiles already are the menu */
         .account-page-row--login,
         .account-page-row--register {
             flex-direction: column;
@@ -235,8 +237,9 @@
 
     @media (max-width: 575px) {
         .account-field-row { grid-template-columns: 1fr; }
-        .account-section-body { grid-template-columns: 1fr; }
-        .account-tile { border-right: 0 !important; }
+        .account-section-body { grid-template-columns: repeat(2, 1fr); }
+        .account-tile { min-height: 110px; padding: 20px 10px; }
+        .account-tile svg { width: 30px; height: 30px; margin-bottom: 8px; }
         .account-detail-row { grid-template-columns: 1fr; gap: 6px; }
         .account-box { padding: 20px 16px; }
     }
@@ -272,7 +275,7 @@
         @endif
     </nav>
 
-    <div class="account-page-row @yield('account_page_row_class')">
+    <div class="account-page-row @yield('account_page_row_class') @if(($activeNav ?? '') === 'account') account-page-row--dashboard @endif">
         <div class="account-main">
             @yield('account_content')
         </div>
