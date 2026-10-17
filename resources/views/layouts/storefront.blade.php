@@ -42,6 +42,32 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- Self-hosted fonts: Inter (English) + Hind Siliguri (বাংলা). Loaded from our own server, no Google request. --}}
+    <link rel="preload" href="{{ asset('fonts/site/inter-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/site/hind-siliguri-bengali-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <style>
+        @font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+            src: url('{{ asset('fonts/site/inter-latin-wght-normal.woff2') }}') format('woff2-variations'), url('{{ asset('fonts/site/inter-latin-wght-normal.woff2') }}') format('woff2');
+            unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+        @font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+            src: url('{{ asset('fonts/site/inter-latin-ext-wght-normal.woff2') }}') format('woff2-variations'), url('{{ asset('fonts/site/inter-latin-ext-wght-normal.woff2') }}') format('woff2');
+            unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+        @foreach([400, 500, 600, 700] as $w)
+        @font-face { font-family: 'Hind Siliguri'; font-style: normal; font-display: swap; font-weight: {{ $w }};
+            src: url('{{ asset('fonts/site/hind-siliguri-bengali-' . $w . '-normal.woff2') }}') format('woff2');
+            unicode-range: U+0951-0952,U+0964-0965,U+0980-09FE,U+1CD0,U+1CD5-1CD6,U+1CD8,U+1CE1,U+1CEA,U+1CED,U+1CF2,U+1CF5-1CF7,U+200C-200D,U+20B9,U+25CC,U+A8F1; }
+        @endforeach
+        :root {
+            --font-sans: 'Inter', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --main-font: var(--font-sans);
+            --heading-font: var(--font-sans);
+            /* colours the old theme stylesheet expects (previously loaded from theme_font.css) */
+            --main-color: #888888; --heading-color: #222222; --heading-font-weight: 500;
+            --link-color: #222222; --link-hover-color: #0090F0;
+            --button-color: #FFFFFF; --button-hover-color: #FFFFFF; --button-bg-color: #222222; --button-bg-hover-color: #0090F0;
+        }
+    </style>
+
     <link rel="stylesheet" href="{{ asset('catalog/view/javascript/xboost/digital_one/e0619659da23d9f95c81c72e70bf087e.css') }}">
 
     <script type="application/ld+json">
@@ -100,7 +126,9 @@
         body {
             background: #fff;
             color: #111;
-            font-family: "Times New Roman", Times, serif;
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             font-size: 16px;
             line-height: 1.5;
             -webkit-text-size-adjust: 100%;
@@ -203,7 +231,7 @@
             padding: 0;
             list-style: none;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
             font-weight: 700;
             font-size: 13px;
             text-transform: capitalize;
@@ -415,7 +443,7 @@
             border-radius: 50%;
             text-align: center;
             padding: 0 4px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
         }
 
         .header-badge:empty { display: none; }
@@ -717,7 +745,7 @@
         .section-title h2 { font-size: 26px; margin: 0; font-weight: 400; line-height: 1.25; }
 
         .section-title a {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
             font-size: 14px;
             white-space: nowrap;
             flex-shrink: 0;
@@ -787,7 +815,7 @@
         .floating-cart-top .fc-items {
             font-size: 8px;
             font-weight: 700;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
             letter-spacing: .2px;
             line-height: 1.2;
         }
@@ -923,7 +951,7 @@
             font-size: 11px;
             font-weight: 700;
             border-radius: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
         }
 
         .btn-order-now {
@@ -936,7 +964,7 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
             transition: background .2s;
         }
 
@@ -1001,7 +1029,7 @@
             color: #fff !important;
         }
 
-        footer .footer-about { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; opacity: .9; }
+        footer .footer-about { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; opacity: .9; }
 
         footer .list-unstyled li { margin-bottom: 8px; }
 
@@ -1097,7 +1125,7 @@
             border: 0;
             background: transparent;
             cursor: pointer;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
         }
 
         .mobile-nav-item svg {
@@ -1236,7 +1264,7 @@
             transform: translateX(-100%);
             transition: transform .3s ease;
             overflow-y: auto;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-sans);
         }
 
         .mobile-nav-drawer.open { transform: translateX(0); }

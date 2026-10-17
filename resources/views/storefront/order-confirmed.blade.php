@@ -23,7 +23,7 @@
 <style>
     .oc-page {
         padding: 24px 0 56px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: var(--font-sans);
     }
 
     .oc-wrap {

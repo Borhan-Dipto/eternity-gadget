@@ -14,7 +14,7 @@
         border: 1px solid #ddd;
         background: #fff;
         padding: 32px 36px 36px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         color: #111;
         text-align: center;
     }
@@ -35,7 +35,7 @@
     .account-page-row--login .login-field label {
         display: block;
         text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
         font-size: 12px;
         font-weight: 700;
         letter-spacing: .5px;
@@ -52,7 +52,7 @@
         background: transparent;
         padding: 10px 4px;
         font-size: 15px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         color: #111;
         text-align: center;
         margin: 0 auto;
@@ -99,7 +99,7 @@
         color: #fff;
         border: 0;
         padding: 14px 20px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         font-size: 15px;
         font-weight: 700;
         letter-spacing: .5px;
@@ -122,7 +122,7 @@
         color: #c0392b;
         font-size: 14px;
         text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
     }
 
     @media (max-width: 991px) {

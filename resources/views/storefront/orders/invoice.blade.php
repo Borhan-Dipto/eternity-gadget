@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Invoice {{ $order->order_number }}</title>
     <style>
-        body { font-family: Arial, sans-serif; color: #111; margin: 24px; }
+        body { font-family: 'Hind Siliguri', Arial, sans-serif; color: #111; margin: 24px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background: #f5f5f5; }

@@ -7,7 +7,7 @@
 @section('account_content')
 <style>
     .reg-page {
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         color: #111;
     }
 
@@ -60,7 +60,7 @@
     }
 
     .reg-field > label {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
         font-size: 12px;
         font-weight: 700;
         letter-spacing: .4px;
@@ -80,7 +80,7 @@
         background: #fff;
         padding: 10px 12px;
         font-size: 14px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         color: #111;
         min-width: 0;
     }
@@ -109,7 +109,7 @@
         padding: 0 10px;
         background: #ebebeb;
         color: #111;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 700;
         border-right: 1px solid #ccc;
@@ -133,7 +133,7 @@
         display: flex;
         align-items: center;
         gap: 18px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         font-size: 15px;
     }
 
@@ -170,7 +170,7 @@
         grid-column: 2;
         font-size: 13px;
         color: #c0392b;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
     }
 
     .reg-footer {
@@ -185,7 +185,7 @@
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        font-family: "Times New Roman", Times, serif;
+        font-family: var(--font-sans);
         font-size: 15px;
         line-height: 1.45;
         max-width: 100%;
@@ -209,7 +209,7 @@
         color: #fff;
         border: 0;
         padding: 14px 28px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 700;
         letter-spacing: .6px;

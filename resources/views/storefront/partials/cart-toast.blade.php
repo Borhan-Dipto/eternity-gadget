@@ -14,7 +14,7 @@
         opacity: 0;
         visibility: hidden;
         transition: transform .35s cubic-bezier(.34, 1.4, .64, 1), opacity .3s ease, visibility .3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: var(--font-sans);
     }
 
     .cart-toast.show {

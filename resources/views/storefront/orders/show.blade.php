@@ -4,7 +4,7 @@
 
 @section('content')
 <style>
-    .order-page { padding: 28px 0 56px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .order-page { padding: 28px 0 56px; font-family: var(--font-sans); }
     .order-page h1 { font-size: 26px; margin-bottom: 8px; }
     .order-meta { color: #555; margin-bottom: 20px; }
     .order-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
