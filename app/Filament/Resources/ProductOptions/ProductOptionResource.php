@@ -19,6 +19,9 @@ use UnitEnum;
 
 class ProductOptionResource extends Resource
 {
+    /** Managed inside the parent screen (product / order); hidden from the menu so nobody edits the raw rows by mistake. */
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = ProductOption::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;

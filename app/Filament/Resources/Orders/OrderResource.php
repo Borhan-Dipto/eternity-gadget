@@ -66,4 +66,22 @@ class OrderResource extends Resource
     {
         return parent::getEloquentQuery()->with(['items.product.images', 'user', 'adminViews']);
     }
+
+    /** New orders waiting to be confirmed, shown as a number next to "Orders" in the menu. */
+    public static function getNavigationBadge(): ?string
+    {
+        $count = \App\Models\Order::query()->whereIn('status', [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_PROCESSING])->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Orders to confirm or pack';
+    }
 }

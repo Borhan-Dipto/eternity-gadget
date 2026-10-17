@@ -17,6 +17,9 @@ use UnitEnum;
 
 class GiftCardResource extends Resource
 {
+    /** Managed inside the parent screen (product / order); hidden from the menu so nobody edits the raw rows by mistake. */
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = GiftCard::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;

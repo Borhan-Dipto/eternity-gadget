@@ -45,6 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
+            // Most-used sections first
+            ->navigationGroups(['Sales', 'Catalog', 'Customers', 'Homepage', 'Navigation', 'Content', 'Settings', 'System'])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 AccountWidget::class,
