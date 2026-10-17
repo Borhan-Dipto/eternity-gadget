@@ -1910,7 +1910,8 @@
 
     $chatMessenger = $chatMessengerBtn?->url ?: setting('facebook_url');
 
-    $chatWhatsapp = $chatWhatsappBtn?->url;
+    // The number saved in Admin → Shop Settings wins; older contact-button / phone settings are the fallback.
+    $chatWhatsapp = setting('whatsapp_number') ? whatsapp_link() : $chatWhatsappBtn?->url;
     if (! $chatWhatsapp) {
         $waDigits = preg_replace('/\D+/', '', (string) setting('phone', '8801867683114'));
         if ($waDigits && ! str_starts_with($waDigits, '880') && strlen($waDigits) === 11 && str_starts_with($waDigits, '0')) {

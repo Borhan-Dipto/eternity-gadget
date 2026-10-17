@@ -216,6 +216,25 @@
         font-weight: 700;
     }
 
+    .pd-btn-whatsapp { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; padding: 12px 16px; border-radius: 6px; background: #25D366; color: #fff !important; font-weight: 600; font-size: 14px; text-decoration: none; }
+    .pd-btn-whatsapp:hover { background: #1ebe5a; }
+    .pd-trust { list-style: none; margin: 16px 0 0; padding: 12px 14px; border: 1px solid #eee; border-radius: 10px; background: #fafafa; }
+    .pd-trust li { display: flex; gap: 10px; font-size: 13px; line-height: 1.55; color: #444; padding: 6px 0; }
+    .pd-trust li + li { border-top: 1px dashed #e6e6e6; }
+    .pd-trust strong { color: #111; }
+    .pd-trust-icon { flex-shrink: 0; width: 20px; text-align: center; }
+    .pd-sticky { display: none; }
+    @media (max-width: 767px) {
+        .pd-sticky { display: flex; align-items: center; gap: 10px; position: fixed; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 79; padding: 10px 12px; background: rgba(255,255,255,.96); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid #eee; box-shadow: 0 -6px 20px rgba(0,0,0,.08); transform: translateY(140%); transition: transform .25s ease; }
+        .pd-sticky.is-visible { transform: translateY(0); }
+        .pd-sticky-price { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+        .pd-sticky-name { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pd-sticky-price strong { font-size: 17px; color: #c0392b; }
+        .pd-sticky-wa { width: 44px; height: 44px; border-radius: 10px; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .pd-sticky-btn { flex-shrink: 0; height: 44px; padding: 0 22px; border: 0; border-radius: 10px; background: #1a5c32; color: #fff; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; }
+        body.page-product .chat-widget { display: none; } /* the sticky bar has WhatsApp; avoids a button covering the page */
+        body.page-product { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
+    }
     .pd-reward-note { display: inline-block; margin: 0 0 12px; padding: 6px 12px; border-radius: 999px; background: #fff4ec; color: #8a4b1f; font-size: 13px; }
     .pd-meta {
         font-size: 14px;
@@ -842,8 +861,44 @@
                     <button class="pd-btn-order" type="submit" style="max-width:280px;">{{ __('messages.stock_alert') }}</button>
                 </form>
             @endif
+
+            @php
+                $pdWhatsapp = whatsapp_link('আমি এই প্রোডাক্টটি অর্ডার করতে চাই: ' . $product->name . ' — ' . route('product.show', $product->slug));
+                $pdFreeMin = (float) setting('free_delivery_min', '0');
+            @endphp
+            @if($pdWhatsapp && $inStock)
+                <a href="{{ $pdWhatsapp }}" class="pd-btn-whatsapp" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4C2.7 15.6 2.2 13.8 2.2 12 2.2 6.6 6.6 2.2 12 2.2c2.6 0 5.1 1 6.9 2.9 1.8 1.8 2.9 4.3 2.9 6.9 0 5.4-4.4 9.8-9.8 9.8zM20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 .1 5.3.1 11.9c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.8 1 3.8 1.5 5.7 1.5 6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.2-3.4-8.5z"/></svg>
+                    WhatsApp-এ অর্ডার / প্রশ্ন করুন
+                </a>
+            @endif
+
+            @if(setting('trust_bar_enabled', '1') === '1')
+                <ul class="pd-trust">
+                    <li><span class="pd-trust-icon">🚚</span><span><strong>ডেলিভারি:</strong> {{ setting('delivery_time_text') ?: 'সারা বাংলাদেশে হোম ডেলিভারি' }}@if($pdFreeMin > 0) · {{ money_bd($pdFreeMin) }}+ অর্ডারে ডেলিভারি ফ্রি @endif</span></li>
+                    <li><span class="pd-trust-icon">💵</span><span><strong>ক্যাশ অন ডেলিভারি:</strong> পণ্য হাতে পেয়ে টাকা দিন</span></li>
+                    @if(setting('return_policy_text'))
+                        <li><span class="pd-trust-icon">↩️</span><span><strong>বাতিল / ফেরত:</strong> {{ setting('return_policy_text') }}</span></li>
+                    @endif
+                </ul>
+            @endif
         </div>
     </div>
+
+    @if($inStock)
+        <div class="pd-sticky" id="pd-sticky" aria-hidden="true">
+            <div class="pd-sticky-price">
+                <span class="pd-sticky-name">{{ \Illuminate\Support\Str::limit($product->name, 34) }}</span>
+                <strong id="pd-sticky-price">{{ money_bd($displayPrice) }}</strong>
+            </div>
+            @if($pdWhatsapp)
+                <a href="{{ $pdWhatsapp }}" class="pd-sticky-wa" target="_blank" rel="noopener" aria-label="WhatsApp">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4C2.7 15.6 2.2 13.8 2.2 12 2.2 6.6 6.6 2.2 12 2.2c2.6 0 5.1 1 6.9 2.9 1.8 1.8 2.9 4.3 2.9 6.9 0 5.4-4.4 9.8-9.8 9.8zM20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 .1 5.3.1 11.9c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.8 1 3.8 1.5 5.7 1.5 6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.2-3.4-8.5z"/></svg>
+                </a>
+            @endif
+            <button type="button" class="pd-sticky-btn" id="pd-sticky-btn">{{ __('messages.order_now') }}</button>
+        </div>
+    @endif
 
     <div class="pd-tabs-wrap" id="reviews">
         <div class="pd-tabs" role="tablist">
@@ -1195,6 +1250,29 @@
 
     prev?.addEventListener('click', () => slideRelated(-1));
     next?.addEventListener('click', () => slideRelated(1));
+})();
+
+// Mobile: sticky "order" bar appears once the main order button scrolls out of view
+(function () {
+    const bar = document.getElementById('pd-sticky');
+    const actions = document.querySelector('.pd-actions');
+    const mainBtn = document.getElementById('pd-btn-order');
+    if (!bar || !actions || !mainBtn || !('IntersectionObserver' in window)) return;
+
+    new IntersectionObserver((entries) => {
+        const hidden = !entries[0].isIntersecting && entries[0].boundingClientRect.top < 0;
+        bar.classList.toggle('is-visible', hidden);
+        bar.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+    }).observe(actions);
+
+    document.getElementById('pd-sticky-btn')?.addEventListener('click', () => mainBtn.click());
+
+    const price = document.getElementById('pd-price-current');
+    const stickyPrice = document.getElementById('pd-sticky-price');
+    if (price && stickyPrice) {
+        new MutationObserver(() => { stickyPrice.textContent = price.textContent; })
+            .observe(price, { childList: true, characterData: true, subtree: true });
+    }
 })();
 </script>
 @endpush

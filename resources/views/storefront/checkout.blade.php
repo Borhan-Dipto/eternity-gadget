@@ -349,6 +349,8 @@
     .co-reward input { margin-top: 4px; width: 18px; height: 18px; accent-color: #1a7f45; flex-shrink: 0; }
     .co-reward small { display: block; color: #777; font-size: 12px; }
     .co-reward-info { cursor: default; border-style: solid; border-color: #f1e2d3; }
+    .co-delivery-note { margin: 10px 2px 0; font-size: 13px; color: #555; text-align: center; }
+    .co-policy-note { margin: 12px 2px 0; font-size: 12.5px; color: #666; text-align: center; line-height: 1.55; }
     .co-free-note { margin-top: 10px; padding: 9px 12px; border-radius: 8px; background: #edf8f1; color: #1a5c32; font-size: 13px; text-align: center; }
 
     .co-total-line {
@@ -465,6 +467,9 @@
                             </label>
                         @endforeach
                     </div>
+                    @if(setting('delivery_time_text'))
+                        <p class="co-delivery-note">🚚 ডেলিভারি সময়: {{ setting('delivery_time_text') }}</p>
+                    @endif
 
                     <h2 class="co-section-title">{{ $co['select_payment'] }}</h2>
                     <div class="co-radio-list">
@@ -504,6 +509,9 @@
                     <button class="co-btn-submit" type="submit" id="checkout-submit-btn">
                         {{ $co['confirm_order'] }} ({{ money_bd($initialTotal) }})
                     </button>
+                    @if(setting('return_policy_text'))
+                        <p class="co-policy-note">↩️ {{ setting('return_policy_text') }}</p>
+                    @endif
                 </form>
             </div>
 
@@ -616,7 +624,7 @@
         const rewardLine = document.getElementById('summary-reward-line');
         if (rewardLine) rewardLine.hidden = rewardDiscount <= 0;
 
-        document.getElementById('summary-shipping').textContent = selectedShipping ? formatMoney(shipping) : 'এলাকা নির্বাচন করুন';
+        document.getElementById('summary-shipping').textContent = selectedShipping ? (shipping > 0 ? formatMoney(shipping) : 'ফ্রি') : 'এলাকা নির্বাচন করুন';
         document.getElementById('summary-total').textContent = formatMoney(total);
 
         const label = document.getElementById('summary-shipping-label');

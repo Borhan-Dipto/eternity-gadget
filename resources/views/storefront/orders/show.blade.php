@@ -18,9 +18,7 @@
         'inside_dhaka' => 'ঢাকা শহরের ভিতরে', 'standard' => 'ঢাকা শহরের ভিতরে',
         'outside_dhaka' => 'ঢাকা শহরের বাইরে', 'express' => 'ঢাকা শহরের বাইরে',
     ];
-    $waDigits = preg_replace('/\D+/', '', (string) setting('whatsapp_number', setting('phone', '01867683114')));
-    if (str_starts_with($waDigits, '01')) { $waDigits = '88' . $waDigits; }
-    $waText = rawurlencode('আমার অর্ডার নম্বর ' . $order->order_number . ' — ');
+    $waLink = whatsapp_link('আমার অর্ডার নম্বর ' . $order->order_number . ' — ');
 @endphp
 
 @section('content')
@@ -151,8 +149,8 @@
 
     <div class="od-actions">
         <a href="{{ $order->invoiceUrl() }}" class="order-btn order-btn-secondary" target="_blank" rel="noopener">ইনভয়েস ডাউনলোড</a>
-        @if($waDigits)
-            <a href="https://wa.me/{{ $waDigits }}?text={{ $waText }}" class="order-btn order-btn-wa" target="_blank" rel="noopener">WhatsApp-এ যোগাযোগ</a>
+        @if($waLink)
+            <a href="{{ $waLink }}" class="order-btn order-btn-wa" target="_blank" rel="noopener">WhatsApp-এ যোগাযোগ</a>
         @endif
         @auth
             <form method="post" action="{{ route('orders.reorder', $order) }}">@csrf<button class="order-btn order-btn-secondary" type="submit">আবার অর্ডার করুন</button></form>

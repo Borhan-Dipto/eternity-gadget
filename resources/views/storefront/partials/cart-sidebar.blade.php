@@ -28,6 +28,12 @@
         font-family: var(--font-sans);
     }
 
+    .cs-free { margin: 10px 0 4px; }
+    .cs-free-text { font-size: 13px; color: #1a5c32; margin-bottom: 6px; text-align: center; }
+    .cs-free-track { height: 6px; border-radius: 99px; background: #e8efe9; overflow: hidden; }
+    .cs-free-fill { height: 100%; width: 0; background: linear-gradient(90deg, #f5924c, #1a7f45); border-radius: 99px; transition: width .4s ease; }
+    .cs-free.done .cs-free-fill { background: #1a7f45; }
+    .cs-note { font-size: 12px; color: #888; text-align: center; margin: 6px 0 10px; }
     .cart-sidebar.open { transform: translateX(0); box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12); }
 
     .cs-header {
@@ -266,14 +272,22 @@
     </div>
 
     <div class="cs-footer">
-        <div class="cs-total-line">
+        <div class="cs-total-line" style="display:none;">
             <span>সাবটোটাল</span>
             <span id="cs-subtotal">৳0</span>
         </div>
         <div class="cs-total-line grand">
-            <span>মোট</span>
+            <span>সাবটোটাল</span>
             <span id="cs-total">৳0</span>
         </div>
+        @php $csFreeMin = (float) setting('free_delivery_min', '0'); @endphp
+        @if($csFreeMin > 0)
+            <div class="cs-free" id="cs-free" data-min="{{ $csFreeMin }}" hidden>
+                <div class="cs-free-text" id="cs-free-text"></div>
+                <div class="cs-free-track"><div class="cs-free-fill" id="cs-free-fill"></div></div>
+            </div>
+        @endif
+        <p class="cs-note">ডেলিভারি চার্জ চেকআউটে এলাকা অনুযায়ী যোগ হবে।</p>
         <div class="cs-actions">
             <button type="button" class="cs-btn cs-btn-view" id="cart-sidebar-continue">আরও কেনাকাটা</button>
             <a href="{{ route('checkout') }}" class="cs-btn cs-btn-checkout" id="cart-sidebar-checkout">অর্ডার করুন</a>
@@ -334,6 +348,19 @@
 
         subtotalEl.textContent = data.subtotal || '৳0';
         totalEl.textContent = data.subtotal || '৳0';
+
+        const free = document.getElementById('cs-free');
+        if (free) {
+            const min = parseFloat(free.dataset.min || '0');
+            const sub = parseFloat(data.subtotal_raw || 0);
+            const fmt = (n) => '৳' + Math.ceil(n).toLocaleString('en-BD');
+            free.hidden = !(min > 0 && sub > 0);
+            document.getElementById('cs-free-fill').style.width = Math.min(100, sub / min * 100) + '%';
+            document.getElementById('cs-free-text').innerHTML = sub >= min
+                ? '🎉 আপনার অর্ডারে <strong>ডেলিভারি চার্জ ফ্রি!</strong>'
+                : 'আর <strong>' + fmt(min - sub) + '</strong> এর প্রোডাক্ট নিলে ডেলিভারি চার্জ ফ্রি';
+            free.classList.toggle('done', sub >= min);
+        }
     }
 
     async function refreshCartSidebar() {

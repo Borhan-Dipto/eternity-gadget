@@ -34,6 +34,22 @@ if (! function_exists('media_url')) {
     }
 }
 
+if (! function_exists('whatsapp_link')) {
+    /** wa.me link for the shop's WhatsApp number (Admin → Shop Settings), with an optional pre-filled message. */
+    function whatsapp_link(?string $message = null): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) (setting('whatsapp_number') ?: setting('phone', '')));
+        if ($digits === '') {
+            return null;
+        }
+        if (str_starts_with($digits, '0') && strlen($digits) === 11) {
+            $digits = '88' . $digits;
+        }
+
+        return 'https://wa.me/' . $digits . ($message ? '?text=' . rawurlencode($message) : '');
+    }
+}
+
 if (! function_exists('money_bd')) {
     function money_bd(float|int|string|null $amount): string
     {
