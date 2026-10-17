@@ -87,6 +87,16 @@ class OrdersTable
                     ->label('Ordered'),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->multiple()
+                    ->options([
+                        Order::STATUS_PENDING => 'Pending (new)',
+                        Order::STATUS_PROCESSING => 'Processing',
+                        Order::STATUS_SHIPPED => 'Shipped',
+                        Order::STATUS_DELIVERED => 'Delivered',
+                        Order::STATUS_CANCELLED => 'Cancelled',
+                    ]),
                 SelectFilter::make('utm_source')
                     ->label('Ad source')
                     ->options(fn (): array => Order::query()->whereNotNull('utm_source')->distinct()->orderBy('utm_source')->pluck('utm_source', 'utm_source')->all()),
