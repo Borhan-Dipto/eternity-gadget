@@ -1279,5 +1279,10 @@
 @endpush
 
 @push('meta_pixel')
-    <script>window.egTrack('ViewContent', @json(\App\Support\MetaPixel::productParams($product)), @json(\App\Support\MetaPixel::newEventId('view_content')));</script>
+    @php
+        $vcEventId = \App\Support\MetaPixel::newEventId('view_content');
+        $vcParams = \App\Support\MetaPixel::productParams($product);
+        \App\Support\MetaConversions::track('ViewContent', $vcEventId, $vcParams);
+    @endphp
+    <script>window.egTrack('ViewContent', @json($vcParams), @json($vcEventId));</script>
 @endpush

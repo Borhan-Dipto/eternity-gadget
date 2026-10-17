@@ -236,6 +236,7 @@ class CheckoutService
             );
             $this->notificationService->sendOrderEmail($order);
             NewOrderAlertJob::dispatch($order->id)->afterResponse();
+            \App\Support\MetaConversions::purchase($order);
             $this->notificationService->sendSms(
                 $order->customer_phone,
                 'Eternity Gadget: আপনার অর্ডার ' . $order->order_number . ' গ্রহণ করা হয়েছে। মোট: ' . money_bd($order->total)

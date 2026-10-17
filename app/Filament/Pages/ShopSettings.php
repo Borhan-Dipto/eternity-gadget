@@ -49,6 +49,10 @@ class ShopSettings extends Page
         'return_policy_text' => ['delivery', 'Cancel / return policy (shown to customers)', 'textarea', ''],
         'trust_bar_enabled' => ['delivery', 'Show delivery/return info bar: on (1) / off (0)', 'text', '1'],
         'whatsapp_number' => ['contact', 'WhatsApp number', 'phone', ''],
+        'meta_pixel_id' => ['tracking', 'Meta Pixel ID (Facebook)', 'text', ''],
+        'meta_capi_token' => ['tracking', 'Meta Conversions API access token', 'text', ''],
+        'meta_test_event_code' => ['tracking', 'Meta test event code (only while testing)', 'text', ''],
+        'ga4_measurement_id' => ['tracking', 'Google Analytics 4 measurement ID', 'text', ''],
     ];
 
     private const TOGGLES = ['rewards_enabled', 'trust_bar_enabled'];
@@ -120,6 +124,17 @@ class ShopSettings extends Page
                         TextInput::make('delivery_time_text')->label('Delivery time (in Bangla, as customers should read it)')->maxLength(150)->columnSpanFull(),
                         Textarea::make('return_policy_text')->label('Cancel / return policy (in Bangla)')->rows(3)->maxLength(600)->columnSpanFull(),
                         Toggle::make('trust_bar_enabled')->label('Show the delivery / return / WhatsApp info box on product pages')->columnSpanFull(),
+                    ]),
+                Section::make('Tracking (Facebook & Google)')
+                    ->description(fn () => 'Leave a box empty to switch that part off. ' . (($s = \App\Support\MetaConversions::lastStatus()) ? 'Last Conversions API send: ' . ($s['ok'] ? 'OK' : 'FAILED') . ' — ' . $s['event'] . ' at ' . $s['at'] . ' (' . $s['message'] . ')' : 'Conversions API has not sent anything yet.'))
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('meta_pixel_id')->label('Meta Pixel ID')->regex('/^\d{10,20}$/')->maxLength(20)->placeholder('1803267180870109'),
+                        TextInput::make('ga4_measurement_id')->label('Google Analytics 4 ID')->regex('/^G-[A-Z0-9]{4,15}$/')->maxLength(20)->placeholder('G-XXXXXXXXXX'),
+                        TextInput::make('meta_capi_token')->label('Conversions API access token')->password()->revealable()->maxLength(500)->columnSpanFull()
+                            ->helperText('Events Manager → your pixel → Settings → Conversions API → Generate access token. Sends every order to Meta from the server too (ad blockers cannot stop it).'),
+                        TextInput::make('meta_test_event_code')->label('Test event code (optional)')->maxLength(30)->placeholder('TEST12345')
+                            ->helperText('Only while checking in Events Manager → Test events. Empty it afterwards.'),
                     ]),
             ]);
     }

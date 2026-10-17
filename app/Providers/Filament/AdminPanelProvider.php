@@ -31,6 +31,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile(isSimple: false)
+            // Optional 2-step login: each admin turns it on in their profile (Google Authenticator / Authy)
+            ->multiFactorAuthentication([\Filament\Auth\MultiFactor\App\AppAuthentication::make()->recoverable()])
             ->brandName('Eternity Gadget')
             ->favicon(asset('brand-icons/favicon-32.png'))
             ->colors([

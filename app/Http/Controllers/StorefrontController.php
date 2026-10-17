@@ -66,11 +66,10 @@ class StorefrontController extends Controller
             $request->boolean('checkout')
         );
 
-        MetaPixel::queue(
-            'AddToCart',
-            MetaPixel::productParams($product, max(1, (int) $request->input('quantity', 1))),
-            MetaPixel::newEventId('add_to_cart')
-        );
+        $pixelEventId = MetaPixel::newEventId('add_to_cart');
+        $pixelParams = MetaPixel::productParams($product, max(1, (int) $request->input('quantity', 1)));
+        MetaPixel::queue('AddToCart', $pixelParams, $pixelEventId);
+        \App\Support\MetaConversions::track('AddToCart', $pixelEventId, $pixelParams);
 
         if ($result['redirect_checkout']) {
             return redirect()->route('checkout');

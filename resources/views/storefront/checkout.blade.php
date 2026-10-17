@@ -6,7 +6,12 @@
 @if($cartItems->isNotEmpty() && ! session()->hasOldInput() && ! $errors->any())
     {{-- Only on the first view; a reload after a form error is the same checkout, not a new one. --}}
     @push('meta_pixel')
-        <script>window.egTrack('InitiateCheckout', @json(\App\Support\MetaPixel::cartParams($cartItems)), @json(\App\Support\MetaPixel::newEventId('initiate_checkout')));</script>
+        @php
+            $icEventId = \App\Support\MetaPixel::newEventId('initiate_checkout');
+            $icParams = \App\Support\MetaPixel::cartParams($cartItems);
+            \App\Support\MetaConversions::track('InitiateCheckout', $icEventId, $icParams);
+        @endphp
+        <script>window.egTrack('InitiateCheckout', @json($icParams), @json($icEventId));</script>
     @endpush
 @endif
 @php

@@ -145,6 +145,13 @@ class StorefrontApiController extends Controller
 
             $cart = $this->miniCartPayload();
             $added = collect($cart['items'])->firstWhere('cart_key', $result['cart_key']);
+            $pixelEventId = MetaPixel::newEventId('add_to_cart');
+            $pixelParams = MetaPixel::productParams(
+                $product,
+                max(1, (int) $request->input('quantity', 1)),
+                isset($added['unit_price_raw']) ? (float) $added['unit_price_raw'] : null
+            );
+            \App\Support\MetaConversions::track('AddToCart', $pixelEventId, $pixelParams);
 
             return response()->json([
                 'success' => true,
@@ -157,14 +164,7 @@ class StorefrontApiController extends Controller
                     'url' => route('product.show', $product->slug),
                 ],
                 'cart' => $cart,
-                'pixel' => MetaPixel::enabled() ? [
-                    'event_id' => MetaPixel::newEventId('add_to_cart'),
-                    'params' => MetaPixel::productParams(
-                        $product,
-                        max(1, (int) $request->input('quantity', 1)),
-                        isset($added['unit_price_raw']) ? (float) $added['unit_price_raw'] : null
-                    ),
-                ] : null,
+                'pixel' => MetaPixel::enabled() ? ['event_id' => $pixelEventId, 'params' => $pixelParams] : null,
             ]);
         } catch (ValidationException $e) {
             return response()->json([
