@@ -96,6 +96,38 @@ class Product extends Model
         return $this->belongsToMany(HomeSection::class, 'home_section_products')->withPivot('sort_order');
     }
 
+    /**
+     * Photo of the exact version chosen (colour / model): a gallery photo tagged with those options
+     * or the photo set on an option row. The most specific match wins; otherwise the main photo.
+     */
+    public function imageForOptions(iterable $optionIds): ?string
+    {
+        $chosen = collect($optionIds)->map(fn ($id) => (int) $id)->filter()->unique();
+        if ($chosen->isEmpty()) {
+            return $this->primaryImage();
+        }
+
+        $candidates = collect();
+        foreach (($this->relationLoaded('images') ? $this->images : $this->images()->get()) as $img) {
+            $tags = collect((array) ($img->option_ids ?? []))->map(fn ($id) => (int) $id);
+            if ($tags->isNotEmpty()) {
+                $candidates->push(['image' => $img->image, 'tags' => $tags]);
+            }
+        }
+        foreach (($this->relationLoaded('options') ? $this->options : $this->options()->get()) as $opt) {
+            if ($opt->image) {
+                $candidates->push(['image' => $opt->image, 'tags' => collect([(int) $opt->id])]);
+            }
+        }
+
+        $best = $candidates
+            ->filter(fn ($c) => $c['tags']->every(fn ($id) => $chosen->contains($id)))
+            ->sortByDesc(fn ($c) => $c['tags']->count())
+            ->first();
+
+        return $best ? MediaPath::normalize($best['image']) : $this->primaryImage();
+    }
+
     public function primaryImage(): ?string
     {
         if ($this->relationLoaded('images')) {

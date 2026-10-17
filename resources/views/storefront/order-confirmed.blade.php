@@ -112,6 +112,7 @@
     }
 
     .oc-item:last-child { border-bottom: 0; }
+    .oc-item-img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; background: #f3f3f3; flex-shrink: 0; margin-right: 12px; }
 
     .oc-item-body { flex: 1; min-width: 0; }
 
@@ -295,12 +296,13 @@
 
             @foreach($order->items as $item)
                 <div class="oc-item">
+                    <img src="{{ media_thumb($item->displayImage(), 300) }}" alt="" class="oc-item-img" width="56" height="56">
                     <div class="oc-item-body">
                         <div class="oc-item-name">{{ $item->product_name }}</div>
                         @if($item->option_summary)
                             <div class="oc-item-option">{{ $item->option_summary }}</div>
                         @endif
-                        <div class="oc-item-qty">Qty: {{ $item->quantity }} &times; {{ money_bd($item->unit_price) }}</div>
+                        <div class="oc-item-qty">পরিমাণ: {{ $item->quantity }} &times; {{ money_bd($item->unit_price) }}</div>
                     </div>
                     <div class="oc-item-price">{{ money_bd($item->total) }}</div>
                 </div>
@@ -315,6 +317,12 @@
                     <div class="oc-total-line">
                         <span>ছাড়</span>
                         <span>−{{ money_bd($order->discount) }}</span>
+                    </div>
+                @endif
+                @if((float) $order->reward_discount > 0)
+                    <div class="oc-total-line">
+                        <span>রিওয়ার্ড পয়েন্ট ছাড়</span>
+                        <span>−{{ money_bd($order->reward_discount) }}</span>
                     </div>
                 @endif
                 <div class="oc-total-line">

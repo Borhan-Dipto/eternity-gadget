@@ -38,7 +38,7 @@ class OrdersTable
                     ->limitedRemainingText()
                     ->getStateUsing(function (Order $record): array {
                         return $record->items
-                            ->map(fn ($item) => $item->product?->primaryImage())
+                            ->map(fn ($item) => $item->displayImage())
                             ->filter()
                             ->unique()
                             ->values()

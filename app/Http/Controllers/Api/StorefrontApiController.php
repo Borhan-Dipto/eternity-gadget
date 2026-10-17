@@ -158,7 +158,7 @@ class StorefrontApiController extends Controller
                 'redirect_checkout' => $result['redirect_checkout'],
                 'product' => [
                     'name' => $product->name,
-                    'image' => media_thumb($product->primaryImage(), 300),
+                    'image' => $added['image'] ?? media_thumb($product->primaryImage(), 300),
                     'price' => $added['unit_price'] ?? money_bd($product->displayPrice()),
                     'option_summary' => $added['option_summary'] ?? null,
                     'url' => route('product.show', $product->slug),
@@ -218,7 +218,7 @@ class StorefrontApiController extends Controller
                 'unit_price' => money_bd($item['unit_price']),
                 'unit_price_raw' => (float) $item['unit_price'],
                 'line_total' => money_bd($item['line_total']),
-                'image' => media_thumb($item['product']->primaryImage(), 300),
+                'image' => media_thumb($item['image_path'] ?? $item['product']->primaryImage(), 300),
                 'url' => route('product.show', $item['product']->slug),
             ])->values(),
         ];

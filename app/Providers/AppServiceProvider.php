@@ -46,6 +46,11 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Product::observe(ProductObserver::class);
+        // menus re-check which categories have products whenever products or categories change
+        foreach ([Product::class, Category::class, \App\Models\ProductOption::class] as $model) {
+            $model::saved(fn () => \App\Support\CategoryVisibility::forget());
+            $model::deleted(fn () => \App\Support\CategoryVisibility::forget());
+        }
 
         View::composer('layouts.storefront', function ($view) {
             if (! $this->storefrontTablesReady()) {
@@ -54,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with([
                 'siteSettings' => SiteSetting::query()->pluck('value', 'key'),
-                'mainMenu' => Menu::query()
+                'mainMenu' => tap(Menu::query()
                     ->where('location', 'main')
                     ->where('is_active', true)
                     ->with([
@@ -66,8 +71,12 @@ class AppServiceProvider extends ServiceProvider
                                     ->with(['children' => fn ($grandQuery) => $grandQuery->where('is_active', true)]),
                             ]),
                     ])
-                    ->first(),
-                'layoutCategories' => Category::query()->where('is_active', true)->with(['children' => fn ($q) => $q->where('is_active', true)])->withCount('products')->orderBy('sort_order')->get(),
+                    ->first(), fn ($menu) => $menu?->setRelation('items', \App\Support\CategoryVisibility::pruneMenuItems($menu->items))),
+                'layoutCategories' => Category::query()->where('is_active', true)->orderBy('sort_order')
+                    ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])->withCount('products')->get()
+                    ->filter(fn ($c) => \App\Support\CategoryVisibility::hasProducts($c->slug))
+                    ->each(fn ($c) => $c->setRelation('children', $c->children->filter(fn ($ch) => \App\Support\CategoryVisibility::hasProducts($ch->slug))->values()))
+                    ->values(),
                 'layoutContactButtons' => ContactButton::query()->where('is_active', true)->orderBy('sort_order')->get(),
                 'footerPages' => Page::query()
                     ->where('is_published', true)

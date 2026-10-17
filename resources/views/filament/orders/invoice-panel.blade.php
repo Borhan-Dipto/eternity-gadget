@@ -134,7 +134,7 @@
             @foreach($order->items as $item)
                 <tr>
                     <td>
-                        <img class="inv-thumb" src="{{ media_url($item->product?->primaryImage()) }}" alt="">
+                        <img class="inv-thumb" src="{{ media_url($item->displayImage()) }}" alt="">
                     </td>
                     <td>{{ $item->product_name }}</td>
                     <td>{{ $item->option_summary ?: '—' }}</td>

@@ -41,9 +41,24 @@ class CatalogController extends Controller
 
         return view('storefront.home', [
             'sliders' => Slider::query()->where('is_active', true)->orderBy('sort_order')->get(),
-            'featuredCategories' => Category::query()->where('is_active', true)->where('is_featured', true)->withCount('products')->orderBy('sort_order')->get(),
+            'featuredCategories' => Category::query()->where('is_active', true)->where('is_featured', true)->withCount('products')->orderBy('sort_order')->get()
+                ->filter(fn (Category $c) => \App\Support\CategoryVisibility::hasProducts($c->slug))->values(),
             'sections' => $sections,
         ]);
+    }
+
+    /** How many products a customer would see on this category's page (same rules as the page itself). */
+    public function liveProductCount(Category $category): int
+    {
+        $categoryScopeIds = $this->categoryScopeIds($category);
+        $modelTokens = $category->parent_id ? $this->modelMatchTokens($category->name) : [];
+
+        return Product::query()
+            ->where('is_active', true)
+            ->where(function ($query) use ($category, $categoryScopeIds, $modelTokens) {
+                $this->applyCategoryProductScope($query, $category, $categoryScopeIds, $modelTokens);
+            })
+            ->count();
     }
 
     public function category(string $slug, Request $request): View
@@ -114,8 +129,11 @@ class CatalogController extends Controller
         return view('storefront.category', [
             'category' => $category,
             'rootCategory' => $rootCategory,
-            'subcategories' => $subcategories,
-            'rootCategories' => $rootCategories,
+            // empty categories are hidden from the filters (the page you are on always stays)
+            'subcategories' => $subcategories->filter(fn (Category $c) => $c->id === $category->id || \App\Support\CategoryVisibility::hasProducts($c->slug))->values(),
+            'rootCategories' => $rootCategories->filter(fn (Category $c) => $c->id === $rootCategory?->id || \App\Support\CategoryVisibility::hasProducts($c->slug))
+                ->each(fn (Category $c) => $c->setRelation('children', $c->children->filter(fn (Category $ch) => $ch->id === $category->id || \App\Support\CategoryVisibility::hasProducts($ch->slug))->values()))
+                ->values(),
             'categoryCounts' => $categoryCounts,
             'products' => $products,
             'boundMin' => $boundMin,

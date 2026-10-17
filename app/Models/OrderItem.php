@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
-    protected $fillable = ['order_id', 'product_id', 'product_name', 'option_summary', 'quantity', 'unit_price', 'total'];
+    protected $fillable = ['order_id', 'product_id', 'product_name', 'option_summary', 'image', 'quantity', 'unit_price', 'total'];
+
+    /** The photo of the version that was ordered (falls back to the product's main photo for older orders). */
+    public function displayImage(): ?string
+    {
+        return $this->image ?: $this->product?->primaryImage();
+    }
 
     public function order(): BelongsTo
     {

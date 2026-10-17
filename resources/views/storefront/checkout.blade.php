@@ -558,7 +558,7 @@
                             </form>
 
                             <div class="co-product-row">
-                                <img class="co-product-thumb" src="{{ media_thumb($item['product']->primaryImage(), 300) }}" alt="{{ $item['product']->name }}">
+                                <img class="co-product-thumb" src="{{ media_thumb($item['image_path'] ?? $item['product']->primaryImage(), 300) }}" alt="{{ $item['product']->name }}">
                                 <div class="co-product-info">
                                     <div class="co-product-name">{{ $item['product']->name }}</div>
                                     @if($optionLines->isNotEmpty())

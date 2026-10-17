@@ -106,7 +106,7 @@
         <div class="od-card-title">প্রোডাক্ট ({{ $order->items->sum('quantity') }}টি)</div>
         @foreach($order->items as $item)
             <div class="od-item">
-                <img src="{{ media_thumb($item->product?->primaryImage(), 300) }}" alt="" loading="lazy">
+                <img src="{{ media_thumb($item->displayImage(), 300) }}" alt="" loading="lazy">
                 <div class="od-item-info">
                     <div class="od-item-name">{{ $item->product_name }}</div>
                     <div class="od-item-meta">
@@ -124,6 +124,9 @@
             <div class="od-row"><span>সাবটোটাল</span><span>{{ money_bd($order->subtotal) }}</span></div>
             @if((float) $order->discount > 0)
                 <div class="od-row"><span>ছাড়@if($order->coupon_code) ({{ $order->coupon_code }})@endif</span><span class="minus">−{{ money_bd($order->discount) }}</span></div>
+            @endif
+            @if((float) $order->reward_discount > 0)
+                <div class="od-row"><span>রিওয়ার্ড পয়েন্ট ({{ $order->reward_points_used }})</span><span class="minus">−{{ money_bd($order->reward_discount) }}</span></div>
             @endif
             <div class="od-row"><span>ডেলিভারি চার্জ</span><span>{{ (float) $order->shipping_cost > 0 ? money_bd($order->shipping_cost) : 'ফ্রি' }}</span></div>
             @if((float) $order->tax_amount > 0)

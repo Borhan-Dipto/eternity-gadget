@@ -202,6 +202,7 @@ class CheckoutService
                         'product_id' => $item['product']->id,
                         'product_name' => $item['product']->name,
                         'option_summary' => $item['option_summary'],
+                        'image' => $item['image_path'] ?? $item['product']->primaryImage(),
                         'quantity' => $item['quantity'],
                         'unit_price' => $item['unit_price'],
                         'total' => $item['line_total'],

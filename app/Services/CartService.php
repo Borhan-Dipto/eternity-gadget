@@ -266,7 +266,7 @@ class CartService
             'quantity' => $item['quantity'],
             'unit_price' => $item['unit_price'],
             'line_total' => $item['line_total'],
-            'image' => media_url($item['product']->primaryImage()),
+            'image' => media_url($item['image_path'] ?? $item['product']->primaryImage()),
         ])->values();
 
         return [
@@ -508,6 +508,8 @@ class CartService
             'cart_key' => $cartKey,
             'product' => $product,
             'option' => $primaryOption,
+            'option_ids' => $selectedOptions->pluck('id')->all(),
+            'image_path' => $product->imageForOptions($selectedOptions->pluck('id')),
             'option_summary' => ProductOptionGroups::formatSummary($selectedOptions),
             'quantity' => $quantity,
             'unit_price' => $unit,

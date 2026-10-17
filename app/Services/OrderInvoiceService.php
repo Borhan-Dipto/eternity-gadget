@@ -25,7 +25,12 @@ class OrderInvoiceService
             'margin_right' => 12,
             'margin_top' => 12,
             'margin_bottom' => 12,
-            'default_font' => 'dejavusans',
+            // Hind Siliguri (Latin + Bangla, regular + bold) for the whole invoice, same font as the website
+            'fontDir' => array_merge((new \Mpdf\Config\ConfigVariables())->getDefaults()['fontDir'], [resource_path('fonts/pdf')]),
+            'fontdata' => array_merge((new \Mpdf\Config\FontVariables())->getDefaults()['fontdata'], [
+                'hindsiliguri' => ['R' => 'HindSiliguri-Regular.ttf', 'B' => 'HindSiliguri-Bold.ttf', 'useOTL' => 0xFF],
+            ]),
+            'default_font' => 'hindsiliguri',
             'tempDir' => storage_path('app/mpdf-temp'),
         ]);
 

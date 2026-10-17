@@ -19,7 +19,7 @@ class OrderItemInfolist
                     ->square()
                     ->size(96)
                     ->defaultImageUrl(asset('images/placeholder.svg'))
-                    ->getStateUsing(fn (OrderItem $record): ?string => $record->product?->primaryImage()),
+                    ->getStateUsing(fn (OrderItem $record): ?string => $record->displayImage()),
                 TextEntry::make('order.order_number')
                     ->label('Order #'),
                 TextEntry::make('product_name')

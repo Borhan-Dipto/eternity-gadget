@@ -23,7 +23,7 @@ class OrderItemsTable
                     ->size(48)
                     ->disk('public')
                     ->defaultImageUrl(asset('images/placeholder.svg'))
-                    ->getStateUsing(fn (OrderItem $record): ?string => $record->product?->primaryImage()),
+                    ->getStateUsing(fn (OrderItem $record): ?string => $record->displayImage()),
                 TextColumn::make('order.order_number')
                     ->label('Order #')
                     ->searchable()
