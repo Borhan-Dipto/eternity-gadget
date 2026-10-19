@@ -8,7 +8,7 @@
     $img = function (?string $path, int $width = 300) use ($forPdf) {
         if (! $path) return null;
         if ($forPdf && ! preg_match('#^https?://#', $path)) {
-            $file = storage_path('app/public/' . ltrim($path, '/'));
+            $file = \Illuminate\Support\Facades\Storage::disk('public')->path(ltrim($path, '/'));
             return is_file($file) ? $file : null;
         }
         return $forPdf ? $path : media_thumb($path, $width);
