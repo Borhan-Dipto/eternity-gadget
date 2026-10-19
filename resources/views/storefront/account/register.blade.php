@@ -349,7 +349,7 @@
                     'value' => old('phone'),
                     'label' => 'মোবাইল নম্বর',
                     'variant' => 'register',
-                    'placeholder' => '1XXXXXXXXX',
+                    'placeholder' => '01XXXXXXXXX',
                 ])
             </div>
         </section>

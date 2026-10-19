@@ -24,7 +24,7 @@
         'checkout' => 'Checkout',
         'form_title' => 'অর্ডার করতে নিচের ফর্মটি পূরণ করুন',
         'name_ph' => 'আপনার নাম লিখুন',
-        'phone_ph' => '1XXXXXXXXX',
+        'phone_ph' => '01XXXXXXXXX',
         'address_ph' => 'আপনার ঠিকানা লিখুন (থানা + জেলা) সহ',
         'notes_ph' => 'কোনো মন্তব্য থাকলে লিখুন',
         'select_area' => 'এলাকা নির্বাচন করুন',

@@ -2368,9 +2368,18 @@
             return;
         }
 
+        // Accepts 01XXXXXXXXX, 1XXXXXXXXX (after the +88 box) and 8801XXXXXXXXX.
+        const localNumber = () => {
+            const d = localInput.value;
+            if (d.length === 10 && d[0] === '1') return '0' + d;
+            if (d.length === 13 && d.startsWith('880')) return d.slice(2);
+            return d;
+        };
+
         const syncPhone = () => {
-            localInput.value = localInput.value.replace(/\D/g, '').slice(0, 11);
-            hiddenInput.value = localInput.value.length === 11 ? '+88' + localInput.value : '';
+            localInput.value = localInput.value.replace(/\D/g, '').slice(0, 13);
+            const n = localNumber();
+            hiddenInput.value = /^01\d{9}$/.test(n) ? '+88' + n : '';
         };
 
         const validateLocal = () => {
@@ -2379,7 +2388,7 @@
                 return true;
             }
 
-            if (localInput.value.length !== 11) {
+            if (!/^01\d{9}$/.test(localNumber())) {
                 localInput.setCustomValidity('সঠিক ১১ সংখ্যার মোবাইল নম্বর লিখুন (যেমন 01XXXXXXXXX)।');
                 return false;
             }
