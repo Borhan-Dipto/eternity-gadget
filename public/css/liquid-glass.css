@@ -73,7 +73,16 @@ html.lg .ig-header {
     overflow: visible;
 }
 html.lg .ig-header.is-hidden { transform: translateY(calc(-100% - 24px)); }
-html.lg .ig-header-inner { position: relative; z-index: 1; }
+html.lg .ig-header-inner {
+    position: relative;
+    z-index: 1;
+    /* The theme gives .container a fixed width (up to 1440px) on big screens; inside the
+       1320px capsule that pushed the icons off the right edge. Always fill the capsule. */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin: 0;
+}
 html.lg body.has-fixed-header { padding-top: calc(var(--header-height, 84px) + 22px) !important; }
 html.lg .search-panel {
     top: calc(100% + 8px);
