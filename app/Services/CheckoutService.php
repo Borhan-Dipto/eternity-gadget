@@ -228,20 +228,25 @@ class CheckoutService
             session()->forget('checkout_idempotency_key');
             $this->cartService->clear();
 
-            $this->notificationService->notify(
+            // The order is already saved. Extras below (notice, email, alerts, tracking, SMS) must never
+            // turn a successful order into an error page, so each one is isolated and only logged.
+            $safely = static function (callable $step): void {
+                try { $step(); } catch (\Throwable $e) { report($e); }
+            };
+            $safely(fn () => $this->notificationService->notify(
                 Auth::user(),
                 'order_placed',
                 'অর্ডার সম্পন্ন হয়েছে',
                 'আপনার অর্ডার ' . $order->order_number . ' সফলভাবে গ্রহণ করা হয়েছে।',
                 ['order_id' => $order->id]
-            );
-            $this->notificationService->sendOrderEmail($order);
-            NewOrderAlertJob::dispatch($order->id)->afterResponse();
-            \App\Support\MetaConversions::purchase($order);
-            $this->notificationService->sendSms(
+            ));
+            $safely(fn () => $this->notificationService->sendOrderEmail($order));
+            $safely(fn () => NewOrderAlertJob::dispatch($order->id)->afterResponse());
+            $safely(fn () => \App\Support\MetaConversions::purchase($order));
+            $safely(fn () => $this->notificationService->sendSms(
                 $order->customer_phone,
                 'Eternity Gadget: আপনার অর্ডার ' . $order->order_number . ' গ্রহণ করা হয়েছে। মোট: ' . money_bd($order->total)
-            );
+            ));
 
             return $order;
         } finally {
