@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/cover.svg" alt="Eternity Gadget — gadget e-commerce platform" width="720" />
+  <img src="./docs/cover.svg" alt="Eternity Gadget — gadget e-commerce platform" width="100%" />
 </p>
 
 <p align="center">
