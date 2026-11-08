@@ -1,58 +1,92 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="./docs/cover.svg" alt="Eternity Gadget — gadget e-commerce platform" width="720" />
 </p>
 
-## About Laravel
+<p align="center">
+  <a href="https://eternitygadget.com"><img src="https://img.shields.io/badge/Live-eternitygadget.com-2dd4bf?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Live site" /></a>
+  <img src="https://img.shields.io/badge/Laravel-12-ff2d20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12" />
+  <img src="https://img.shields.io/badge/PHP-8.2-777bb4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2" />
+  <img src="https://img.shields.io/badge/Filament-admin-fdae4b?style=for-the-badge" alt="Filament" />
+  <img src="https://img.shields.io/badge/MySQL-4479a1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Eternity Gadget
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Eternity Gadget** is a full e-commerce platform for a gadget and accessories shop in Bangladesh. Customers get a fast, Bangla-friendly storefront; the team gets a powerful **Filament** admin panel to run products, orders, marketing and customer service.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ✨ Features
 
-## Learning Laravel
+**Storefront**
+- Home, category, product, search, compare and wishlist pages
+- Product options and variants — picking a colour or model shows that exact photo
+- Cart, checkout with delivery areas, free-delivery progress bar and a sticky order button
+- Customer accounts with social login, order history, reward points and gift cards
+- Product reviews and return requests
+- Shop in **Bangla or English**, with self-hosted Inter + Hind Siliguri fonts
+- Modern frosted-glass design and friendly error pages
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Admin panel (Filament)**
+- Products, categories, device models, product options and inventory adjustments
+- Orders with status filters, professional PDF invoices and order badges
+- Coupons, gift cards, reward points and shipping methods
+- Homepage sections, sliders, menus, pages and site settings — no code changes needed
+- Newsletter subscribers, contact messages and WhatsApp contact buttons
+- Audit logs and **2-step admin login**
+- Product import / export
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Automation**
+- Abandoned-cart recovery
+- Low-stock alerts
+- Automatic confirmation of pending orders
+- Daily database backups and error alerts
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**Marketing & SEO**
+- Meta Pixel + **Conversions API** and Google Analytics 4
+- XML sitemap and SEO-friendly pages
 
-## Agentic Development
+## 🛠️ Tech stack
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+| Layer | Technology |
+| --- | --- |
+| Framework | Laravel 12, PHP 8.2 |
+| Admin panel | Filament |
+| Database | MySQL |
+| Frontend | Blade templates, Tailwind CSS v4, Vite |
+| PDFs | mPDF |
+| Auth | Laravel auth + Socialite |
+
+## 🚀 Getting started
+
+Requirements: PHP 8.2+, Composer, Node.js and MySQL.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/Borhan-Dipto/eternity-gadget.git
+cd eternity-gadget
+composer run setup   # installs dependencies, creates .env, migrates and builds assets
+composer run dev     # starts the local development environment
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Before running `setup`, create a MySQL database and fill in the `DB_*` values in `.env`. For production, start from `.env.production.example` and never commit real `.env` files.
 
-## Contributing
+### Run tests
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer run test
+```
 
-## Code of Conduct
+## 📁 Project structure
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+app/
+├── Console/Commands/   # Backups, low-stock alerts, cart recovery, order confirmation
+├── Filament/           # Admin panel resources and pages
+└── Http/               # Storefront controllers
+resources/views/
+├── storefront/         # Customer-facing pages
+├── invoices/ pdf/      # Invoice and PDF templates
+└── emails/             # Email templates
+```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+<p align="center">Built by <a href="https://github.com/Borhan-Dipto">Borhan Dipto</a></p>
